@@ -116,3 +116,35 @@ describe.each(listarAlgoritmos().filter((a) => a.familia === 'ordenamiento'))(
     })
   },
 )
+
+describe.each(listarAlgoritmos().filter((a) => a.familia === 'busqueda'))(
+  'búsqueda: $id',
+  (algoritmo) => {
+    const preparar = algoritmo.prepararEntrada ?? ((entrada) => entrada)
+
+    it('encuentra los valores presentes e informa los ausentes', () => {
+      const funcion = compilar(algoritmo)
+      for (const entrada of entradas) {
+        const preparada = preparar(entrada)
+        const objetivos = [...new Set(entrada), 0, 100, entero(1, 99)]
+        for (const objetivo of objetivos) {
+          const { pasos, resultado } = algoritmo.ejecutar(entrada, objetivo)
+          const ultimo = pasos.at(-1)
+
+          if (preparada.includes(objetivo)) {
+            expect(preparada[resultado]).toBe(objetivo)
+            expect(ultimo.estados[resultado]).toBe('encontrado')
+          } else {
+            expect(resultado).toBe(-1)
+            expect(ultimo.estados).not.toContain('encontrado')
+            expect(ultimo.estados.every((estado) => estado === 'descartado')).toBe(true)
+          }
+
+          // El código mostrado devuelve lo mismo que la traza.
+          expect(funcion([...preparada], objetivo)).toBe(resultado)
+          revisarTraza(algoritmo, pasos, entrada)
+        }
+      }
+    })
+  },
+)

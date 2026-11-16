@@ -1,4 +1,12 @@
 import insercion from './insercion'
+import burbuja from './burbuja'
+import seleccion from './seleccion'
+import shell from './shell'
+import mezcla from './mezcla'
+import quicksort from './quicksort'
+import monticulos from './monticulos'
+import busquedaLineal from './busquedaLineal'
+import busquedaBinaria from './busquedaBinaria'
 
 /**
  * Registro de algoritmos ejecutables.
@@ -8,6 +16,14 @@ import insercion from './insercion'
  */
 const lista = [
   insercion,
+  burbuja,
+  seleccion,
+  shell,
+  mezcla,
+  quicksort,
+  monticulos,
+  busquedaLineal,
+  busquedaBinaria,
 ]
 
 const porId = new Map(lista.map((algoritmo) => [algoritmo.id, algoritmo]))
