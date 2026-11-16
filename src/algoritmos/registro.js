@@ -14,6 +14,9 @@ import residuos from './residuos'
 import cubetas from './cubetas'
 import busquedaLineal from './busquedaLineal'
 import busquedaBinaria from './busquedaBinaria'
+import busquedaSaltos from './busquedaSaltos'
+import busquedaInterpolacion from './busquedaInterpolacion'
+import busquedaExponencial from './busquedaExponencial'
 
 /**
  * Registro de algoritmos ejecutables.
@@ -38,6 +41,9 @@ const lista = [
   cubetas,
   busquedaLineal,
   busquedaBinaria,
+  busquedaSaltos,
+  busquedaInterpolacion,
+  busquedaExponencial,
 ]
 
 const porId = new Map(lista.map((algoritmo) => [algoritmo.id, algoritmo]))

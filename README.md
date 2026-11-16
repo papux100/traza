@@ -75,17 +75,30 @@ src/
 
 El reproductor y el visualizador no se tocan. Al ejecutar `pnpm test`, el algoritmo nuevo queda cubierto automáticamente por las pruebas.
 
+### Zonas auxiliares
+
+Algunos algoritmos sacan elementos del arreglo: los reparten en cubetas, los pasan a un arreglo de salida o los insertan en un árbol. Para dibujarlos, cada paso puede llevar una zona extra en `detalle.auxiliar`:
+
+| Tipo | Usado por | Contenido |
+|---|---|---|
+| `cubetas` | residuos, cubetas | Lista de cubetas, cada una con su etiqueta y sus elementos |
+| `conteo` | conteo | Casillas con su valor y el arreglo de salida |
+| `arbol` | árbol | Lista de nodos con sus hijos izquierdo y derecho, y la raíz |
+
+Mientras un elemento está en la zona extra, su posición en el arreglo queda en `null` y se dibuja como un hueco. Los colores de los elementos de la zona se indican con `detalle.porId`, por identificador de elemento. Si un algoritmo sólo admite valores pequeños, declara `valorMax` y el editor lo respeta.
+
 ### Dos reglas al instrumentar
 
-- **Cada paso debe contener los mismos elementos, sin repetidos.** Los algoritmos que desplazan en lugar de intercambiar (inserción, Shell, mezcla) duplican un valor por un instante. Para dibujarlos, construyen una "vista" del arreglo en la que cada elemento aparece una sola vez. Las pruebas detectan si se olvida.
+- **Cada paso debe contener los mismos elementos, sin repetidos**, contando el arreglo y la zona auxiliar. Los algoritmos que desplazan en lugar de intercambiar (inserción, Shell, mezcla) duplican un valor por un instante. Para dibujarlos, construyen una "vista" del arreglo en la que cada elemento aparece una sola vez. Las pruebas detectan si se olvida.
 - **Nunca guardes el arreglo directamente.** Pásalo a `g.paso`, que es quien hace la copia.
 
 ## Qué verifican las pruebas
 
-Para cada algoritmo, con 46 entradas (casos límite más arreglos aleatorios con semilla fija):
+Para cada uno de los 19 algoritmos, con 46 entradas (casos límite más arreglos aleatorios con semilla fija):
 
 - El resultado queda ordenado y conserva los elementos originales.
 - La entrada no se modifica y el primer paso la muestra intacta.
+- Ningún elemento se pierde ni se duplica al pasar entre el arreglo y una zona auxiliar.
 - Ningún paso comparte arreglo con el anterior, y los contadores nunca disminuyen.
 - Cada línea resaltada existe en el código mostrado.
 - **El código que se muestra en la ficha se evalúa y se comprueba que ordena de verdad**, y que con valores repetidos deja los elementos en el mismo orden que la traza.
@@ -105,4 +118,4 @@ En ambos casos basta con conectar el repositorio de GitHub; el comando de compil
 
 ## Pendiente
 
-Las diez fichas restantes aparecen en el catálogo como "En preparación": inserción binaria, coctelera, peine, árbol, conteo, residuos, cubetas y las búsquedas por saltos, interpolación y exponencial. También quedan pendientes la comparación en paralelo de dos algoritmos y los artículos de cierre.
+Los 19 algoritmos del catálogo tienen ficha. Quedan como ampliaciones posibles la comparación en paralelo de dos algoritmos sobre el mismo arreglo y los artículos de cierre: qué ordenamientos usan las bibliotecas estándar (Timsort, introsort) y cuándo conviene ordenar antes de buscar.

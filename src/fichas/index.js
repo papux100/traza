@@ -14,6 +14,9 @@ import FichaResiduos from './Residuos'
 import FichaCubetas from './Cubetas'
 import FichaBusquedaLineal from './BusquedaLineal'
 import FichaBusquedaBinaria from './BusquedaBinaria'
+import FichaBusquedaSaltos from './BusquedaSaltos'
+import FichaBusquedaInterpolacion from './BusquedaInterpolacion'
+import FichaBusquedaExponencial from './BusquedaExponencial'
 
 /** Relaciona el id de cada algoritmo con el componente de su ficha. */
 export const FICHAS = {
@@ -33,4 +36,7 @@ export const FICHAS = {
   cubetas: FichaCubetas,
   'busqueda-lineal': FichaBusquedaLineal,
   'busqueda-binaria': FichaBusquedaBinaria,
+  'busqueda-saltos': FichaBusquedaSaltos,
+  'busqueda-interpolacion': FichaBusquedaInterpolacion,
+  'busqueda-exponencial': FichaBusquedaExponencial,
 }

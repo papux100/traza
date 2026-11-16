@@ -281,8 +281,12 @@ export const ALGORITMOS = [
     nombreCorto: 'Por saltos',
     familia: 'busqueda',
     bloque: 'busqueda',
-    disponible: false,
-    intencion: 'Avanza a brincos de tamaño fijo y luego retrocede linealmente.',
+    disponible: true,
+    intencion:
+      'Avanza por bloques de tamaño fijo hasta pasarse del valor, y luego revisa uno por uno dentro del último bloque.',
+    complejidad: { mejor: 'O(1)', promedio: 'O(√n)', peor: 'O(√n)' },
+    espacio: 'O(1)',
+    requisito: 'Datos ordenados',
   },
   {
     id: 'busqueda-interpolacion',
@@ -290,8 +294,12 @@ export const ALGORITMOS = [
     nombreCorto: 'Por interpolación',
     familia: 'busqueda',
     bloque: 'busqueda',
-    disponible: false,
-    intencion: 'Estima dónde debería estar el valor según su magnitud.',
+    disponible: true,
+    intencion:
+      'Estima dónde debería estar el valor según su magnitud, como quien abre el directorio cerca del final para buscar un apellido con Z.',
+    complejidad: { mejor: 'O(1)', promedio: 'O(log log n)', peor: 'O(n)' },
+    espacio: 'O(1)',
+    requisito: 'Datos ordenados y uniformes',
   },
   {
     id: 'busqueda-exponencial',
@@ -299,8 +307,12 @@ export const ALGORITMOS = [
     nombreCorto: 'Exponencial',
     familia: 'busqueda',
     bloque: 'busqueda',
-    disponible: false,
-    intencion: 'Duplica el índice hasta pasarse y termina con búsqueda binaria.',
+    disponible: true,
+    intencion:
+      'Duplica la posición hasta pasarse del valor, y termina con búsqueda binaria en el último tramo recorrido.',
+    complejidad: { mejor: 'O(1)', promedio: 'O(log i)', peor: 'O(log n)' },
+    espacio: 'O(1)',
+    requisito: 'Datos ordenados',
   },
 ]
 
