@@ -1,14 +1,26 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Route, Routes } from 'react-router'
 import './index.css'
-import { Visualizador } from '@/componentes/visualizador/Visualizador'
+import { Layout } from '@/componentes/Layout'
+import Inicio from '@/paginas/Inicio'
+import FichaAlgoritmo from '@/paginas/FichaAlgoritmo'
+import Comparativa from '@/paginas/Comparativa'
+import Conceptos from '@/paginas/Conceptos'
+import NoEncontrada from '@/paginas/NoEncontrada'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <main className="mx-auto max-w-6xl px-6 py-12">
-      <h1 className="text-4xl">Traza</h1>
-      <p className="mt-3 mb-8 text-muted-foreground">Primera prueba del visualizador con ordenamiento por inserción.</p>
-      <Visualizador algoritmoId="insercion" />
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Inicio />} />
+          <Route path="algoritmos/:id" element={<FichaAlgoritmo />} />
+          <Route path="comparativa" element={<Comparativa />} />
+          <Route path="conceptos" element={<Conceptos />} />
+          <Route path="*" element={<NoEncontrada />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 )
