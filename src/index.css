@@ -1,0 +1,198 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-400-italic.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Archivo Variable', 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+
+  --color-elevada: var(--elevada);
+  --color-tenue: var(--tenue);
+
+  --color-estado-normal: var(--estado-normal);
+  --color-estado-fuera: var(--estado-fuera);
+  --color-estado-descartado: var(--estado-descartado);
+  --color-estado-ordenado: var(--estado-ordenado);
+  --color-estado-activo: var(--estado-activo);
+  --color-estado-pivote: var(--estado-pivote);
+  --color-estado-comparando: var(--estado-comparando);
+  --color-estado-encontrado: var(--estado-encontrado);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/*
+ * Tema único, oscuro: azules sobre negros y grises azulados.
+ * La idea visual del sitio es que el orden "enciende" el arreglo:
+ * las barras empiezan grises y se vuelven azules al quedar en su lugar.
+ */
+:root {
+  --background: #0a0f19;
+  --foreground: #dde6f3;
+  --card: #101827;
+  --card-foreground: #dde6f3;
+  --elevada: #162136;
+  --popover: #162136;
+  --popover-foreground: #dde6f3;
+  --primary: #4c9dff;
+  --primary-foreground: #05101f;
+  --secondary: #1a2740;
+  --secondary-foreground: #dde6f3;
+  --muted: #162136;
+  --muted-foreground: #8d9db8;
+  --tenue: #5f6f8a;
+  --accent: #1a2740;
+  --accent-foreground: #dde6f3;
+  --destructive: #ff7a85;
+  --border: #212e47;
+  --input: #2a3a58;
+  --ring: #4c9dff;
+  --radius: 0.5rem;
+
+  --sidebar: #070b13;
+  --sidebar-foreground: #c3cfe2;
+  --sidebar-accent: #131d30;
+  --sidebar-border: #182235;
+
+  --estado-normal: #40506e;
+  --estado-fuera: #1c2639;
+  --estado-descartado: #172031;
+  --estado-ordenado: #4c9dff;
+  --estado-activo: #eef3fb;
+  --estado-pivote: #f074b4;
+  --estado-comparando: #f6b93f;
+  --estado-encontrado: #3ddc97;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-stretch: 112%;
+    font-weight: 620;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /* Texto corrido de las fichas y artículos. */
+  .prosa {
+    max-width: 68ch;
+    color: color-mix(in oklab, var(--foreground) 88%, var(--background));
+  }
+  .prosa > * + * {
+    margin-top: 1em;
+  }
+  .prosa strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .prosa a {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklab, var(--primary) 45%, transparent);
+    text-underline-offset: 3px;
+  }
+  .prosa a:hover {
+    text-decoration-color: var(--primary);
+  }
+  .prosa code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.3em;
+    background: var(--elevada);
+    color: var(--foreground);
+  }
+  .prosa ul {
+    list-style: disc;
+    padding-left: 1.2em;
+  }
+  .prosa ol {
+    list-style: decimal;
+    padding-left: 1.4em;
+  }
+  .prosa li + li {
+    margin-top: 0.4em;
+  }
+  .prosa li::marker {
+    color: var(--tenue);
+  }
+}
