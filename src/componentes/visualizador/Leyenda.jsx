@@ -6,7 +6,12 @@ import { APARIENCIA, ORDEN_LEYENDA } from './estados'
 export function Leyenda({ pasos, etiquetas = {} }) {
   const usados = useMemo(() => {
     const vistos = new Set()
-    for (const paso of pasos) for (const estado of paso.estados) vistos.add(estado)
+    for (const paso of pasos) {
+      for (const estado of paso.estados) vistos.add(estado)
+      for (const estado of Object.values(paso.estadosPorId ?? {})) vistos.add(estado)
+      for (const celda of paso.auxiliar?.celdas ?? []) vistos.add(celda.estado)
+      if (paso.auxiliar?.nodos?.some((nodo) => nodo.devuelto)) vistos.add('descartado')
+    }
     return ORDEN_LEYENDA.filter((estado) => vistos.has(estado))
   }, [pasos])
 

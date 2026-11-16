@@ -5,6 +5,7 @@ import { obtenerAlgoritmo } from '@/algoritmos/registro'
 import { usePreferencias } from '@/motor/preferencias'
 import { crearReproductor } from '@/motor/reproductor'
 import { cn } from '@/lib/utils'
+import { Auxiliar } from './Auxiliar'
 import { Barras } from './Barras'
 import { Contadores } from './Contadores'
 import { Controles } from './Controles'
@@ -30,6 +31,11 @@ export function Visualizador({ algoritmoId, compacto = false, autoReproducir = f
   const objetivo = useStore(reproductor, (s) => s.objetivo)
   const reproduciendo = useStore(reproductor, (s) => s.reproduciendo)
   const velocidad = usePreferencias((s) => s.velocidad)
+  const esBusqueda = algoritmo.familia === 'busqueda'
+
+  // Escala común para todas las zonas, tomada del primer paso (que siempre
+  // tiene el arreglo completo). Así una barra mide lo mismo en cualquier zona.
+  const maximo = Math.max(...pasos[0].elementos.map((e) => e.valor), esBusqueda ? objetivo : 0, 1)
 
   // El temporizador sólo avanza el índice; no sabe nada del algoritmo.
   useEffect(() => {
@@ -76,10 +82,13 @@ export function Visualizador({ algoritmoId, compacto = false, autoReproducir = f
           <div className="flex min-w-0 flex-col gap-4 p-4 sm:p-6">
             <Barras
               paso={paso}
-              objetivo={algoritmo.familia === 'busqueda' ? objetivo : undefined}
+              objetivo={esBusqueda ? objetivo : undefined}
+              maximo={maximo}
               duracion={duracion}
-              alto={compacto ? 'h-48' : 'h-56'}
+              alto={compacto ? 'h-48' : pasos[0].auxiliar ? 'h-40' : 'h-56'}
             />
+
+            <Auxiliar paso={paso} maximo={maximo} duracion={duracion} />
 
             <p aria-live="polite" className="min-h-[3.3em] text-[0.9375rem] leading-relaxed text-foreground">
               {paso.descripcion}

@@ -70,9 +70,15 @@ export default function Comparativa() {
 
         <div className="prosa mt-6">
           <p>
-            Ningún algoritmo gana en todas las columnas. Mezcla es el único eficiente y estable, pero paga con
-            memoria. Montículos garantiza el tiempo sin gastar memoria, pero pierde la estabilidad. Quicksort suele
-            ser el más rápido y es el único de los tres con un peor caso cuadrático.
+            Ningún algoritmo gana en todas las columnas. Entre los que comparan elementos, mezcla es el único que
+            garantiza n log n y además es estable, pero paga con memoria. Montículos garantiza el tiempo sin gastar
+            memoria, pero pierde la estabilidad. Quicksort suele ser el más rápido, y aun así tiene un peor caso
+            cuadrático.
+          </p>
+          <p>
+            Los tres del bloque sin comparaciones parecen ganar a todos, pero sus columnas esconden condiciones: k es
+            el rango de valores, d la cantidad de cifras y b la base. Sólo convienen cuando los datos tienen la forma
+            que esos algoritmos necesitan.
           </p>
           <p>
             Por eso las bibliotecas estándar no usan ninguno en estado puro: combinan varios y eligen según el tamaño

@@ -12,11 +12,13 @@ const ALTO_ETIQUETA = '1.5rem'
  * elementos cambian de posición entre un paso y el siguiente, Motion
  * desliza las barras en lugar de redibujarlas.
  */
-export function Barras({ paso, objetivo, duracion = 0.25, alto = 'h-56' }) {
-  const { elementos, estados, marcadores, rango } = paso
+export function Barras({ paso, objetivo, maximo: maximoFijo, duracion = 0.25, alto = 'h-56', etiqueta }) {
+  const { elementos, estados, marcadores = [], rango = null } = paso
   const cantidad = elementos.length
   const hayObjetivo = typeof objetivo === 'number'
-  const maximo = Math.max(...elementos.map((e) => e.valor), hayObjetivo ? objetivo : 0, 1)
+  // La escala se fija desde fuera para que no cambie cuando hay huecos.
+  const maximo =
+    maximoFijo ?? Math.max(...elementos.filter(Boolean).map((e) => e.valor), hayObjetivo ? objetivo : 0, 1)
   const columnas = { gridTemplateColumns: `repeat(${cantidad}, minmax(0, 1fr))` }
   const separacion = cantidad > 12 ? 'gap-1' : 'gap-1.5 sm:gap-2'
 
@@ -26,11 +28,12 @@ export function Barras({ paso, objetivo, duracion = 0.25, alto = 'h-56' }) {
   }
 
   return (
-    <div className="select-none" role="img" aria-label={describir(paso)}>
+    <div className="select-none" role="img" aria-label={etiqueta ?? describir(paso)}>
       <div className={cn('relative', alto)}>
         <div className={cn('grid h-full', separacion)} style={columnas}>
           {elementos.map((elemento, i) => {
             const estado = estados[i]
+            if (!elemento) return <Hueco key={`hueco-${i}`} />
             return (
               <motion.div
                 key={elemento.id}
@@ -107,7 +110,22 @@ export function Barras({ paso, objetivo, duracion = 0.25, alto = 'h-56' }) {
   )
 }
 
+/** Posición vacía: su elemento está en otra zona. */
+function Hueco() {
+  return (
+    <div className="flex h-full min-w-0 flex-col justify-end" aria-hidden="true">
+      <div className="flex min-h-0 flex-1 items-end">
+        <div className="h-1.5 w-full rounded-[2px] border border-dashed border-input" />
+      </div>
+      <div className="flex items-center justify-center font-mono text-xs text-tenue" style={{ height: ALTO_ETIQUETA }}>
+        ·
+      </div>
+    </div>
+  )
+}
+
 /** Texto alternativo del gráfico para lectores de pantalla. */
 function describir(paso) {
-  return `Arreglo: ${paso.elementos.map((e) => e.valor).join(', ')}. ${paso.descripcion}`
+  const valores = paso.elementos.map((e) => (e ? e.valor : 'vacío')).join(', ')
+  return `Arreglo: ${valores}. ${paso.descripcion ?? ''}`
 }

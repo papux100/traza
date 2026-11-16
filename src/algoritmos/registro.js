@@ -1,10 +1,17 @@
 import insercion from './insercion'
+import insercionBinaria from './insercionBinaria'
 import burbuja from './burbuja'
+import coctelera from './coctelera'
 import seleccion from './seleccion'
 import shell from './shell'
+import peine from './peine'
 import mezcla from './mezcla'
 import quicksort from './quicksort'
 import monticulos from './monticulos'
+import arbol from './arbol'
+import conteo from './conteo'
+import residuos from './residuos'
+import cubetas from './cubetas'
 import busquedaLineal from './busquedaLineal'
 import busquedaBinaria from './busquedaBinaria'
 
@@ -16,12 +23,19 @@ import busquedaBinaria from './busquedaBinaria'
  */
 const lista = [
   insercion,
+  insercionBinaria,
   burbuja,
+  coctelera,
   seleccion,
   shell,
+  peine,
   mezcla,
   quicksort,
   monticulos,
+  arbol,
+  conteo,
+  residuos,
+  cubetas,
   busquedaLineal,
   busquedaBinaria,
 ]

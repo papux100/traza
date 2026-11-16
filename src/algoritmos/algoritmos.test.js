@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ESTADOS } from '@/motor/traza'
+import { ESTADOS, elementosDelPaso } from '@/motor/traza'
 import { listarAlgoritmos } from './registro'
 
 /** Generador pseudoaleatorio con semilla, para que las pruebas sean repetibles. */
@@ -39,8 +39,9 @@ function revisarTraza(algoritmo, pasos, entrada) {
   expect(pasos.length).toBeGreaterThan(1)
 
   for (const paso of pasos) {
-    // Cada paso conserva exactamente los mismos elementos, sin repetidos.
-    expect(paso.elementos.map((e) => e.id).sort()).toEqual(idsEsperados)
+    // Cada paso conserva exactamente los mismos elementos, sin repetidos,
+    // estén en el arreglo o en una zona auxiliar.
+    expect(elementosDelPaso(paso).map((e) => e.id).sort()).toEqual(idsEsperados)
     expect(paso.estados).toHaveLength(entrada.length)
     for (const estado of paso.estados) expect(ESTADOS).toContain(estado)
 
@@ -68,9 +69,16 @@ function revisarTraza(algoritmo, pasos, entrada) {
   }
 }
 
+/** Ajusta las entradas al rango que admite cada algoritmo. */
+function entradasPara(algoritmo) {
+  if (!algoritmo.valorMax) return entradas
+  return entradas.map((entrada) => entrada.map((v) => 1 + ((v - 1) % algoritmo.valorMax)))
+}
+
 describe.each(listarAlgoritmos().filter((a) => a.familia === 'ordenamiento'))(
   'ordenamiento: $id',
   (algoritmo) => {
+    const entradas = entradasPara(algoritmo)
 
     it('deja el arreglo ordenado y conserva los elementos', () => {
       for (const entrada of entradas) {
@@ -109,7 +117,12 @@ describe.each(listarAlgoritmos().filter((a) => a.familia === 'ordenamiento'))(
       // al que produce el código que el visitante lee.
       const funcion = compilar(algoritmo)
       for (const entrada of entradas) {
-        const etiquetados = entrada.map((valor, i) => ({ valor, id: `e${i}`, valueOf: () => valor }))
+        const etiquetados = entrada.map((valor, i) => ({
+          valor,
+          id: `e${i}`,
+          valueOf: () => valor,
+          toString: () => String(valor),
+        }))
         const final = funcion(etiquetados).map((e) => e.id)
         expect(algoritmo.ejecutar(entrada).pasos.at(-1).elementos.map((e) => e.id)).toEqual(final)
       }

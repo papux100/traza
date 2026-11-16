@@ -7,7 +7,7 @@ export const VALOR_MAX = 99
  * Convierte el texto que escribe el usuario en un arreglo de enteros.
  * Devuelve { valores } si es válido o { error } con una explicación.
  */
-export function leerArreglo(texto) {
+export function leerArreglo(texto, { valorMax = VALOR_MAX } = {}) {
   const partes = texto
     .split(/[\s,;]+/)
     .map((parte) => parte.trim())
@@ -23,11 +23,11 @@ export function leerArreglo(texto) {
   const valores = []
   for (const parte of partes) {
     if (!/^\d+$/.test(parte)) {
-      return { error: `"${parte}" no es un entero. Usa sólo números entre ${VALOR_MIN} y ${VALOR_MAX}.` }
+      return { error: `"${parte}" no es un entero. Usa sólo números entre ${VALOR_MIN} y ${valorMax}.` }
     }
     const valor = Number(parte)
-    if (valor < VALOR_MIN || valor > VALOR_MAX) {
-      return { error: `${valor} está fuera de rango. Usa números entre ${VALOR_MIN} y ${VALOR_MAX}.` }
+    if (valor < VALOR_MIN || valor > valorMax) {
+      return { error: `${valor} está fuera de rango. Usa números entre ${VALOR_MIN} y ${valorMax}.` }
     }
     valores.push(valor)
   }
@@ -46,6 +46,6 @@ export function leerObjetivo(texto) {
   return { valor }
 }
 
-export function arregloAleatorio(cantidad = 8, aleatorio = Math.random) {
-  return Array.from({ length: cantidad }, () => VALOR_MIN + Math.floor(aleatorio() * VALOR_MAX))
+export function arregloAleatorio(cantidad = 8, { valorMax = VALOR_MAX, aleatorio = Math.random } = {}) {
+  return Array.from({ length: cantidad }, () => VALOR_MIN + Math.floor(aleatorio() * (valorMax - VALOR_MIN + 1)))
 }

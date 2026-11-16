@@ -12,6 +12,7 @@
 
 /** Estados posibles de una posición, de menor a mayor prioridad visual. */
 export const ESTADOS = [
+  'vacio',
   'normal',
   'fuera',
   'descartado',
@@ -87,6 +88,11 @@ export function crearGrabador() {
      *   comparando  posiciones que se comparan
      *   encontrado  posición del resultado
      *   marcadores  { etiqueta: posición } para mostrar bajo las barras
+     *   auxiliar    zona extra: { tipo: 'cubetas' | 'conteo' | 'arbol', ... }
+     *   porId       { idDelElemento: estado } para los elementos de la zona extra
+     *
+     * Una posición con null en `elementos` es un hueco: ese elemento salió
+     * del arreglo y está en la zona auxiliar.
      */
     paso(elementos, descripcion, detalle = {}) {
       const estados = new Array(elementos.length).fill('normal')
@@ -105,23 +111,57 @@ export function crearGrabador() {
       marcar(estados, detalle.comparando, 'comparando')
       marcar(estados, detalle.encontrado, 'encontrado')
 
+      // Una posición sin elemento es un hueco: el elemento está en otra zona.
+      for (let i = 0; i < elementos.length; i++) {
+        if (elementos[i] === null || elementos[i] === undefined) estados[i] = 'vacio'
+      }
+
       const marcadores = Object.entries(detalle.marcadores ?? {})
         .filter(([, indice]) => indice >= 0 && indice < elementos.length)
         .map(([etiqueta, indice]) => ({ etiqueta, indice }))
 
       pasos.push(
         Object.freeze({
-          elementos: Object.freeze(elementos.slice()),
+          elementos: Object.freeze(elementos.map((e) => e ?? null)),
           estados: Object.freeze(estados),
           marcadores: Object.freeze(marcadores),
           rango: detalle.rango ? Object.freeze([...detalle.rango]) : null,
           linea: detalle.linea ?? null,
           descripcion,
           contadores: Object.freeze({ ...contadores }),
+          auxiliar: detalle.auxiliar ? copiaCongelada(detalle.auxiliar) : null,
+          estadosPorId: Object.freeze({ ...(detalle.porId ?? {}) }),
         }),
       )
     },
   }
+}
+
+/**
+ * Copia profunda y congelada de una estructura auxiliar (cubetas, conteos,
+ * árbol). Los elementos ya están congelados, así que se comparten tal cual.
+ */
+function copiaCongelada(valor) {
+  if (valor === null || typeof valor !== 'object' || Object.isFrozen(valor)) return valor
+  if (Array.isArray(valor)) return Object.freeze(valor.map(copiaCongelada))
+  const copia = {}
+  for (const [clave, interno] of Object.entries(valor)) copia[clave] = copiaCongelada(interno)
+  return Object.freeze(copia)
+}
+
+/**
+ * Todos los elementos presentes en un paso, estén en el arreglo principal o
+ * en una zona auxiliar. Sirve para comprobar que ningún elemento se pierde
+ * ni se duplica al moverse entre zonas.
+ */
+export function elementosDelPaso(paso) {
+  const lista = paso.elementos.filter(Boolean)
+  const aux = paso.auxiliar
+  if (!aux) return lista
+  if (aux.tipo === 'cubetas') for (const cubeta of aux.cubetas) lista.push(...cubeta.elementos)
+  if (aux.tipo === 'conteo') lista.push(...aux.salida.filter(Boolean))
+  if (aux.tipo === 'arbol') lista.push(...aux.nodos.filter((n) => !n.devuelto).map((n) => n.elemento))
+  return lista
 }
 
 /**

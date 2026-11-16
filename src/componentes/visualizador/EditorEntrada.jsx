@@ -9,6 +9,7 @@ const claseCampo =
 
 export function EditorEntrada({ reproductor, algoritmo }) {
   const esBusqueda = algoritmo.familia === 'busqueda'
+  const valorMax = algoritmo.valorMax ?? VALOR_MAX
   const entrada = useStore(reproductor, (s) => s.entrada)
   const objetivo = useStore(reproductor, (s) => s.objetivo)
   const [texto, setTexto] = useState(entrada.join(', '))
@@ -20,7 +21,7 @@ export function EditorEntrada({ reproductor, algoritmo }) {
 
   function aplicar(evento) {
     evento.preventDefault()
-    const arreglo = leerArreglo(texto)
+    const arreglo = leerArreglo(texto, { valorMax })
     if (arreglo.error) return setError(arreglo.error)
 
     let buscado
@@ -35,12 +36,12 @@ export function EditorEntrada({ reproductor, algoritmo }) {
   }
 
   function aleatorio() {
-    const valores = arregloAleatorio(esBusqueda ? 11 : 8)
+    const valores = arregloAleatorio(esBusqueda ? 11 : 8, { valorMax })
     // En búsqueda, casi siempre se busca un valor que sí está.
     const buscado = esBusqueda
       ? Math.random() < 0.8
         ? valores[Math.floor(Math.random() * valores.length)]
-        : arregloAleatorio(1)[0]
+        : arregloAleatorio(1, { valorMax })[0]
       : undefined
 
     setTexto(valores.join(', '))
@@ -108,7 +109,8 @@ export function EditorEntrada({ reproductor, algoritmo }) {
         </p>
       ) : (
         <p className="text-xs text-tenue">
-          Hasta {MAX_ELEMENTOS} enteros entre {VALOR_MIN} y {VALOR_MAX}, separados por comas o espacios.
+          Hasta {MAX_ELEMENTOS} enteros entre {VALOR_MIN} y {valorMax}, separados por comas o espacios.
+          {algoritmo.valorMax && ' Este algoritmo necesita un rango de valores pequeño, por eso el máximo es menor.'}
           {algoritmo.prepararEntrada && ' Este algoritmo exige datos ordenados, así que tu arreglo se ordena antes de empezar.'}
         </p>
       )}
