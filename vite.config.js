@@ -10,6 +10,10 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  build: {
+    // El cliente de Supabase hace crecer el paquete; el aviso de tamaño no aplica aquí.
+    chunkSizeWarningLimit: 800,
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.js'],

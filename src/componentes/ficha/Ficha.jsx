@@ -1,8 +1,9 @@
 import { Link } from 'react-router'
-import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Lock, X } from 'lucide-react'
+import { Markdown, MarkdownEnLinea } from '@/componentes/Markdown'
 import { Badge } from '@/componentes/ui/badge'
 import { Visualizador } from '@/componentes/visualizador/Visualizador'
-import { DISPONIBLES, obtenerBloque, obtenerDatos, obtenerFamilia, rutaDe } from '@/datos/catalogo'
+import { obtenerBloque, obtenerFamilia, rutaDe } from '@/datos/catalogo'
 
 function Seccion({ id, titulo, children }) {
   return (
@@ -24,7 +25,9 @@ function Lista({ icono, titulo, elementos, tono }) {
         {elementos.map((elemento, i) => (
           <li key={i} className="flex gap-3 text-[0.9375rem] leading-relaxed text-foreground/90">
             <Icono className={`mt-1 size-4 shrink-0 ${tono}`} aria-hidden="true" />
-            <span>{elemento}</span>
+            <span className="prosa">
+              <MarkdownEnLinea texto={elemento} />
+            </span>
           </li>
         ))}
       </ul>
@@ -65,51 +68,79 @@ function Complejidad({ datos, nota }) {
         </div>
       )}
 
-      <div className="prosa mt-5">{nota}</div>
+      <div className="prosa mt-5">
+        <Markdown texto={nota} />
+      </div>
     </>
   )
 }
 
-/**
- * Plantilla de ficha. Todas las fichas pasan por aquí, de modo que el orden
- * de las secciones es el mismo en todo el catálogo y no depende de quien
- * escribe cada una.
- */
-export function Ficha({
-  id,
-  analogia,
-  comoFunciona,
-  requisitos,
-  complejidad,
-  usarlo,
-  evitarlo,
-  implementacion,
-  relaciones,
-}) {
-  const datos = obtenerDatos(id)
+/** Encabezado de una ficha. Lo usa también la vista de ficha bloqueada. */
+export function EncabezadoFicha({ datos }) {
   const familia = obtenerFamilia(datos.familia)
   const bloque = obtenerBloque(datos.bloque)
-  const posicion = DISPONIBLES.findIndex((a) => a.id === id)
-  const anterior = DISPONIBLES[posicion - 1]
-  const siguiente = DISPONIBLES[posicion + 1]
+  return (
+    <header>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {familia?.nombre}
+        {datos.familia === 'ordenamiento' && bloque && <span className="text-tenue"> / {bloque.nombre}</span>}
+      </p>
+      <h1 className="text-4xl sm:text-5xl">{datos.nombre}</h1>
+      <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-foreground/90 sm:text-xl">{datos.intencion}</p>
+    </header>
+  )
+}
 
+/** Enlaces a la ficha anterior y la siguiente, en el orden del catálogo. */
+export function NavegacionFichas({ id, algoritmos }) {
+  const posicion = algoritmos.findIndex((a) => a.id === id)
+  const anterior = algoritmos[posicion - 1]
+  const siguiente = algoritmos[posicion + 1]
+  return (
+    <nav aria-label="Otras fichas" className="mt-16 flex flex-wrap justify-between gap-4 border-t pt-6 text-sm">
+      {anterior ? (
+        <Link to={rutaDe(anterior.id)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          <span>
+            <span className="block text-xs text-tenue">Ficha anterior</span>
+            {anterior.nombre}
+          </span>
+        </Link>
+      ) : (
+        <span />
+      )}
+      {siguiente && (
+        <Link to={rutaDe(siguiente.id)} className="flex items-center gap-2 text-right text-muted-foreground hover:text-foreground">
+          <span>
+            <span className="block text-xs text-tenue">Ficha siguiente</span>
+            {siguiente.nombre}
+          </span>
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      )}
+    </nav>
+  )
+}
+
+/**
+ * Plantilla de ficha. Recibe los datos del algoritmo y el contenido que viene
+ * de la base de datos; el orden de las secciones es el mismo para todas.
+ */
+export function Ficha({ datos, ficha, algoritmos, conSesion }) {
   return (
     <article>
-      <header>
-        <p className="mb-3 text-sm text-muted-foreground">
-          {familia.nombre}
-          {datos.familia === 'ordenamiento' && <span className="text-tenue"> / {bloque.nombre}</span>}
-        </p>
-        <h1 className="text-4xl sm:text-5xl">{datos.nombre}</h1>
-        <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-foreground/90 sm:text-xl">{datos.intencion}</p>
-      </header>
+      <EncabezadoFicha datos={datos} />
 
       <Seccion id="analogia" titulo="Analogía">
-        <div className="prosa">{analogia}</div>
+        <div className="prosa">
+          <Markdown texto={ficha.analogia} />
+        </div>
       </Seccion>
 
       <Seccion id="como-funciona" titulo="Cómo funciona">
-        <div className="prosa">{comoFunciona}</div>
+        <div className="prosa">
+          <Markdown texto={ficha.comoFunciona} />
+        </div>
       </Seccion>
 
       <Seccion id="visualizador" titulo="Pruébalo paso a paso">
@@ -117,21 +148,23 @@ export function Ficha({
           Reproduce la ejecución o avanza a tu ritmo. Con el foco dentro del visualizador puedes usar las flechas
           izquierda y derecha para moverte un paso, y la barra espaciadora para reproducir o pausar.
         </p>
-        <Visualizador key={id} algoritmoId={id} />
+        <Visualizador key={datos.id} algoritmoId={datos.id} />
       </Seccion>
 
       <Seccion id="requisitos" titulo="Requisitos previos">
-        <div className="prosa">{requisitos}</div>
+        <div className="prosa">
+          <Markdown texto={ficha.requisitos} />
+        </div>
       </Seccion>
 
       <Seccion id="complejidad" titulo="Complejidad">
-        <Complejidad datos={datos} nota={complejidad} />
+        <Complejidad datos={datos} nota={ficha.complejidad} />
       </Seccion>
 
       <Seccion id="cuando" titulo="Cuándo usarlo y cuándo no">
         <div className="grid max-w-4xl gap-8 md:grid-cols-2">
-          <Lista icono={Check} titulo="Conviene cuando" elementos={usarlo} tono="text-primary" />
-          <Lista icono={X} titulo="Mejor evitarlo cuando" elementos={evitarlo} tono="text-estado-pivote" />
+          <Lista icono={Check} titulo="Conviene cuando" elementos={ficha.usarlo} tono="text-primary" />
+          <Lista icono={X} titulo="Mejor evitarlo cuando" elementos={ficha.evitarlo} tono="text-estado-pivote" />
         </div>
       </Seccion>
 
@@ -142,8 +175,10 @@ export function Ficha({
             detalles que conviene no pasar por alto al escribirlo:
           </p>
           <ul>
-            {implementacion.map((detalle, i) => (
-              <li key={i}>{detalle}</li>
+            {ficha.implementacion.map((detalle, i) => (
+              <li key={i}>
+                <MarkdownEnLinea texto={detalle} />
+              </li>
             ))}
           </ul>
         </div>
@@ -151,48 +186,28 @@ export function Ficha({
 
       <Seccion id="relaciones" titulo="Relación con otros algoritmos">
         <ul className="flex max-w-[68ch] flex-col divide-y rounded-lg border">
-          {relaciones.map((relacion) => {
-            const otro = obtenerDatos(relacion.id)
+          {ficha.relaciones.map((relacion) => {
+            const otro = algoritmos.find((a) => a.id === relacion.id)
+            if (!otro) return null
             return (
               <li key={relacion.id} className="px-4 py-3.5">
-                {otro.disponible ? (
-                  <Link to={rutaDe(otro.id)} className="font-medium text-primary underline-offset-4 hover:underline">
-                    {otro.nombre}
-                  </Link>
-                ) : (
-                  <span className="font-medium">
-                    {otro.nombre} <span className="text-xs font-normal text-tenue">(ficha en preparación)</span>
-                  </span>
-                )}
-                <p className="mt-1 text-[0.9375rem] leading-relaxed text-foreground/85">{relacion.texto}</p>
+                <Link
+                  to={rutaDe(otro.id)}
+                  className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {otro.nombre}
+                  {!conSesion && !otro.publico && <Lock className="size-3.5 text-tenue" aria-label="Requiere cuenta" />}
+                </Link>
+                <p className="prosa mt-1 text-[0.9375rem] leading-relaxed text-foreground/85">
+                  <MarkdownEnLinea texto={relacion.texto} />
+                </p>
               </li>
             )
           })}
         </ul>
       </Seccion>
 
-      <nav aria-label="Otras fichas" className="mt-16 flex flex-wrap justify-between gap-4 border-t pt-6 text-sm">
-        {anterior ? (
-          <Link to={rutaDe(anterior.id)} className="group flex items-center gap-2 text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            <span>
-              <span className="block text-xs text-tenue">Ficha anterior</span>
-              {anterior.nombre}
-            </span>
-          </Link>
-        ) : (
-          <span />
-        )}
-        {siguiente && (
-          <Link to={rutaDe(siguiente.id)} className="group flex items-center gap-2 text-right text-muted-foreground hover:text-foreground">
-            <span>
-              <span className="block text-xs text-tenue">Ficha siguiente</span>
-              {siguiente.nombre}
-            </span>
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        )}
-      </nav>
+      <NavegacionFichas id={datos.id} algoritmos={algoritmos} />
     </article>
   )
 }

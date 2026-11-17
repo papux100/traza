@@ -1,9 +1,8 @@
 import { Link } from 'react-router'
+import { EstadoCarga } from '@/componentes/EstadoCarga'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/componentes/ui/table'
-import { DISPONIBLES, obtenerBloque, rutaDe } from '@/datos/catalogo'
-
-const ordenamientos = DISPONIBLES.filter((a) => a.familia === 'ordenamiento')
-const busquedas = DISPONIBLES.filter((a) => a.familia === 'busqueda')
+import { obtenerBloque, rutaDe } from '@/datos/catalogo'
+import { useCatalogo } from '@/stores/catalogo'
 
 function Nombre({ algoritmo }) {
   return (
@@ -22,6 +21,15 @@ const SiNo = ({ valor }) => (
 const Mono = ({ children }) => <TableCell className="font-mono text-[0.8125rem]">{children}</TableCell>
 
 export default function Comparativa() {
+  const algoritmos = useCatalogo((s) => s.algoritmos)
+  const error = useCatalogo((s) => s.error)
+  const ordenamientos = algoritmos.filter((a) => a.familia === 'ordenamiento')
+  const busquedas = algoritmos.filter((a) => a.familia === 'busqueda')
+
+  if (algoritmos.length === 0) {
+    return <EstadoCarga error={error} texto="Cargando la tabla…" alReintentar={() => useCatalogo.getState().cargar({ forzar: true })} />
+  }
+
   return (
     <>
       <header className="max-w-3xl">

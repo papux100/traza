@@ -1,18 +1,12 @@
 import { Link } from 'react-router'
+import { Lock } from 'lucide-react'
+import { EstadoCarga } from '@/componentes/EstadoCarga'
 import { Visualizador } from '@/componentes/visualizador/Visualizador'
-import { BLOQUES, DISPONIBLES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
+import { BLOQUES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
+import { useCatalogo } from '@/stores/catalogo'
+import { useSesion } from '@/stores/sesion'
 
-function Fila({ algoritmo }) {
-  if (!algoritmo.disponible) {
-    return (
-      <li className="grid gap-x-6 gap-y-1 px-4 py-3.5 sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-baseline">
-        <span className="font-medium text-tenue">{algoritmo.nombreCorto}</span>
-        <span className="text-[0.9375rem] text-tenue">{algoritmo.intencion}</span>
-        <span className="text-xs text-tenue">En preparación</span>
-      </li>
-    )
-  }
-
+function Fila({ algoritmo, bloqueado }) {
   return (
     <li>
       <Link
@@ -23,15 +17,28 @@ function Fila({ algoritmo }) {
           {algoritmo.nombreCorto}
         </span>
         <span className="text-[0.9375rem] leading-relaxed text-foreground/85">{algoritmo.intencion}</span>
-        <span className="font-mono text-xs text-muted-foreground" title="Complejidad en el caso promedio">
-          {algoritmo.complejidad.promedio.startsWith('O') ? algoritmo.complejidad.promedio : 'Variable'}
-        </span>
+        {bloqueado ? (
+          <span className="flex items-center gap-1 text-xs whitespace-nowrap text-tenue">
+            <Lock className="size-3.5" aria-hidden="true" />
+            Requiere cuenta
+          </span>
+        ) : (
+          <span className="font-mono text-xs text-muted-foreground" title="Complejidad en el caso promedio">
+            {algoritmo.complejidad.promedio.startsWith('O') ? algoritmo.complejidad.promedio : 'Variable'}
+          </span>
+        )}
       </Link>
     </li>
   )
 }
 
 export default function Inicio() {
+  const algoritmos = useCatalogo((s) => s.algoritmos)
+  const cargando = useCatalogo((s) => s.cargando)
+  const error = useCatalogo((s) => s.error)
+  const conSesion = useSesion((s) => Boolean(s.usuario))
+  const privados = algoritmos.filter((a) => !a.publico).length
+
   return (
     <>
       <header className="max-w-3xl">
@@ -55,7 +62,23 @@ export default function Inicio() {
         <Visualizador algoritmoId="quicksort" compacto autoReproducir />
       </section>
 
-      {FAMILIAS.map((familia) => (
+      {!conSesion && privados > 0 && (
+        <p className="mt-10 max-w-[68ch] rounded-lg border bg-card px-4 py-3 text-[0.9375rem] text-foreground/90">
+          Sin cuenta puedes abrir {algoritmos.length - privados} fichas.{' '}
+          <Link to="/registro" className="text-primary underline underline-offset-4">
+            Crea una cuenta gratis
+          </Link>{' '}
+          para ver las {algoritmos.length} completas.
+        </p>
+      )}
+
+      {(cargando || error) && (
+        <div className="mt-16">
+          <EstadoCarga error={error} texto="Cargando el catálogo…" alReintentar={() => useCatalogo.getState().cargar({ forzar: true })} />
+        </div>
+      )}
+
+      {algoritmos.length > 0 && FAMILIAS.map((familia) => (
         <section key={familia.id} aria-labelledby={`familia-${familia.id}`} className="mt-16">
           <h2 id={`familia-${familia.id}`} className="text-3xl">
             {familia.nombre}
@@ -71,8 +94,8 @@ export default function Inicio() {
                 </div>
               )}
               <ul className="divide-y overflow-hidden rounded-lg border">
-                {algoritmosDelBloque(bloque.id).map((algoritmo) => (
-                  <Fila key={algoritmo.id} algoritmo={algoritmo} />
+                {algoritmosDelBloque(algoritmos, bloque.id).map((algoritmo) => (
+                  <Fila key={algoritmo.id} algoritmo={algoritmo} bloqueado={!conSesion && !algoritmo.publico} />
                 ))}
               </ul>
             </div>
@@ -91,7 +114,7 @@ export default function Inicio() {
             </Link>
           </h3>
           <p className="mt-2 text-[0.9375rem] text-foreground/85">
-            Los {DISPONIBLES.length} algoritmos lado a lado: complejidad, memoria, estabilidad y requisitos.
+            Todos los algoritmos lado a lado: complejidad, memoria, estabilidad y requisitos.
           </p>
         </div>
         <div>

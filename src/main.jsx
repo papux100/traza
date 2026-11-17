@@ -8,6 +8,8 @@ import FichaAlgoritmo from '@/paginas/FichaAlgoritmo'
 import Comparativa from '@/paginas/Comparativa'
 import Conceptos from '@/paginas/Conceptos'
 import NoEncontrada from '@/paginas/NoEncontrada'
+import Entrar from '@/paginas/Entrar'
+import Registro from '@/paginas/Registro'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -18,6 +20,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="algoritmos/:id" element={<FichaAlgoritmo />} />
           <Route path="comparativa" element={<Comparativa />} />
           <Route path="conceptos" element={<Conceptos />} />
+          <Route path="entrar" element={<Entrar />} />
+          <Route path="registro" element={<Registro />} />
           <Route path="*" element={<NoEncontrada />} />
         </Route>
       </Routes>
