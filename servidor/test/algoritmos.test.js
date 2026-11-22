@@ -12,7 +12,7 @@ function crearAleatorio(semilla) {
   }
 }
 
-const aleatorio = crearAleatorio(377864)
+const aleatorio = crearAleatorio(321321)
 const entero = (min, max) => min + Math.floor(aleatorio() * (max - min + 1))
 
 const ENTRADAS = [
