@@ -1,4 +1,4 @@
-import { crearElementos, crearGrabador, indices, marcarCodigo } from '@/motor/traza'
+import { crearElementos, crearGrabador, indices, marcarCodigo } from '../motor/traza.js'
 
 const { codigo, L } = marcarCodigo(`
 function quicksort(arr, inicio = 0, fin = arr.length - 1) {
