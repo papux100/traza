@@ -44,7 +44,7 @@ function Complejidad({ datos, nota }) {
   ]
   return (
     <>
-      <dl className="grid grid-cols-2 overflow-hidden rounded-lg border sm:grid-cols-4">
+      <dl className="facetado grid grid-cols-2 overflow-hidden border sm:grid-cols-4">
         {casos.map((caso, i) => (
           <div
             key={caso.etiqueta}
@@ -185,7 +185,7 @@ export function Ficha({ datos, ficha, algoritmos, conSesion }) {
       </Seccion>
 
       <Seccion id="relaciones" titulo="Relación con otros algoritmos">
-        <ul className="flex max-w-[68ch] flex-col divide-y rounded-lg border">
+        <ul className="facetado flex max-w-[68ch] flex-col divide-y border">
           {ficha.relaciones.map((relacion) => {
             const otro = algoritmos.find((a) => a.id === relacion.id)
             if (!otro) return null

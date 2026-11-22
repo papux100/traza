@@ -14,7 +14,7 @@ function FichaBloqueada({ datos, algoritmos }) {
   return (
     <article>
       <EncabezadoFicha datos={datos} />
-      <section className="mt-12 max-w-xl rounded-xl border bg-card px-6 py-6">
+      <section className="facetado mt-12 max-w-xl border bg-card px-6 py-6">
         <Lock className="size-6 text-primary" aria-hidden="true" />
         <h2 className="mt-3 text-2xl">Esta ficha es para usuarios registrados</h2>
         <p className="mt-2 text-foreground/85">

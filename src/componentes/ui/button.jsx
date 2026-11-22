@@ -3,11 +3,11 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent text-sm font-medium whitespace-nowrap transition-colors select-none disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-[3px] border border-transparent text-sm font-medium whitespace-nowrap transition-colors select-none disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/85',
+        default: 'corte rounded-none bg-primary text-primary-foreground hover:bg-faceta-7',
         outline: 'border-input bg-transparent text-foreground hover:bg-secondary',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/70',
         ghost: 'text-muted-foreground hover:bg-secondary hover:text-foreground',
@@ -16,7 +16,7 @@ const buttonVariants = cva(
         default: 'h-9 px-3.5',
         sm: 'h-8 px-2.5 text-[0.8125rem]',
         icon: 'size-9',
-        'icon-lg': 'size-11 rounded-full',
+        'icon-lg': 'hexagono size-12 rounded-none',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

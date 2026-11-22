@@ -33,7 +33,7 @@ export function Visualizador({ algoritmoId, compacto = false, autoReproducir = f
     reproductor.getState().cargar()
   }, [reproductor])
 
-  const marco = cn('overflow-hidden rounded-xl border bg-card', className)
+  const marco = cn('facetado overflow-hidden border bg-card [--corte:22px]', className)
 
   if (estado === 'listo') {
     return (

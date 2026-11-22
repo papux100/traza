@@ -1,8 +1,11 @@
 import { Link } from 'react-router'
 import { Lock } from 'lucide-react'
 import { EstadoCarga } from '@/componentes/EstadoCarga'
+import { Fragmentos, Grieta } from '@/componentes/Fragmentos'
+import { buttonVariants } from '@/componentes/ui/button'
 import { Visualizador } from '@/componentes/visualizador/Visualizador'
 import { BLOQUES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
+import { cn } from '@/lib/utils'
 import { useCatalogo } from '@/stores/catalogo'
 import { useSesion } from '@/stores/sesion'
 
@@ -41,16 +44,36 @@ export default function Inicio() {
 
   return (
     <>
-      <header className="max-w-3xl">
-        <h1 className="text-4xl sm:text-[3.25rem]">Mira cómo piensa un algoritmo, un paso a la vez</h1>
-        <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-foreground/85">
-          Un catálogo de algoritmos de ordenamiento y búsqueda. Cada ficha explica cuándo conviene usar el algoritmo y
-          te deja ejecutarlo con tus propios datos: avanza, retrocede y sigue en el código la línea que se está
-          ejecutando.
-        </p>
+      <header className="relative isolate pt-2 pb-6 lg:min-h-[26rem]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-12 -right-28 -z-10 h-[24rem] w-[15rem] opacity-30 sm:-right-12 sm:h-[30rem] sm:w-[20rem] sm:opacity-60 lg:-top-8 lg:right-[-2.5rem] lg:h-[34rem] lg:w-[23rem] lg:opacity-100"
+        >
+          <Fragmentos semilla={7} />
+        </div>
+        <div className="max-w-[36rem]">
+          <h1 className="text-[2.6rem] leading-[1.05] sm:text-6xl">Mira cómo piensa un algoritmo, un paso a la vez</h1>
+          <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-foreground/85">
+            Un catálogo de algoritmos de ordenamiento y búsqueda. Cada ficha explica cuándo conviene usar el algoritmo y
+            te deja ejecutarlo con tus propios datos: avanza, retrocede y sigue en el código la línea que se está
+            ejecutando.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <a href="#catalogo" className={cn(buttonVariants(), 'h-10 px-5')}>
+              Ver el catálogo
+            </a>
+            {!conSesion && (
+              <Link to="/registro" className={cn(buttonVariants({ variant: 'outline' }), 'h-10 px-5')}>
+                Crear cuenta gratis
+              </Link>
+            )}
+          </div>
+        </div>
       </header>
 
-      <section aria-labelledby="demostracion" className="mt-10">
+      <Grieta semilla={5} className="mt-6 mb-8" />
+
+      <section aria-labelledby="demostracion">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 id="demostracion" className="font-sans text-base font-medium tracking-normal text-muted-foreground [font-stretch:100%]">
             Inserción ordenando siete números
@@ -63,7 +86,7 @@ export default function Inicio() {
       </section>
 
       {!conSesion && privados > 0 && (
-        <p className="mt-10 max-w-[68ch] rounded-lg border bg-card px-4 py-3 text-[0.9375rem] text-foreground/90">
+        <p className="facetado mt-10 max-w-[68ch] border bg-card px-4 py-3 text-[0.9375rem] text-foreground/90">
           Sin cuenta puedes abrir {algoritmos.length - privados} fichas.{' '}
           <Link to="/registro" className="text-primary underline underline-offset-4">
             Crea una cuenta gratis
@@ -78,6 +101,7 @@ export default function Inicio() {
         </div>
       )}
 
+      <div id="catalogo" className="scroll-mt-20" />
       {algoritmos.length > 0 && FAMILIAS.map((familia) => (
         <section key={familia.id} aria-labelledby={`familia-${familia.id}`} className="mt-16">
           <h2 id={`familia-${familia.id}`} className="text-3xl">
@@ -93,7 +117,7 @@ export default function Inicio() {
                   <p className="mt-1 text-sm text-muted-foreground">{bloque.descripcion}</p>
                 </div>
               )}
-              <ul className="divide-y overflow-hidden rounded-lg border">
+              <ul className="facetado divide-y overflow-hidden border">
                 {algoritmosDelBloque(algoritmos, bloque.id).map((algoritmo) => (
                   <Fila key={algoritmo.id} algoritmo={algoritmo} bloqueado={!conSesion && !algoritmo.publico} />
                 ))}
@@ -103,7 +127,8 @@ export default function Inicio() {
         </section>
       ))}
 
-      <section aria-labelledby="mas" className="mt-16 grid gap-8 border-t pt-10 md:grid-cols-2">
+      <Grieta semilla={13} className="mt-16" />
+      <section aria-labelledby="mas" className="mt-8 grid gap-8 md:grid-cols-2">
         <h2 id="mas" className="sr-only">
           Más en el catálogo
         </h2>

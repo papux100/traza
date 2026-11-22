@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 
 function Table({ className, ...props }) {
   return (
-    <div data-slot="table-container" className="w-full overflow-x-auto rounded-lg border">
+    <div data-slot="table-container" className="facetado w-full overflow-x-auto border">
       <table data-slot="table" className={cn('w-full border-collapse text-sm', className)} {...props} />
     </div>
   )

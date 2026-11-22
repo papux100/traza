@@ -40,6 +40,14 @@
   --color-sidebar-border: var(--sidebar-border);
 
   --color-elevada: var(--elevada);
+  --color-faceta-1: var(--faceta-1);
+  --color-faceta-2: var(--faceta-2);
+  --color-faceta-3: var(--faceta-3);
+  --color-faceta-4: var(--faceta-4);
+  --color-faceta-5: var(--faceta-5);
+  --color-faceta-6: var(--faceta-6);
+  --color-faceta-7: var(--faceta-7);
+  --color-faceta-8: var(--faceta-8);
   --color-tenue: var(--tenue);
 
   --color-estado-normal: var(--estado-normal);
@@ -58,43 +66,54 @@
 }
 
 /*
- * Tema único, oscuro: azules sobre negros y grises azulados.
- * La idea visual del sitio es que el orden "enciende" el arreglo:
- * las barras empiezan grises y se vuelven azules al quedar en su lugar.
+ * Tema único, oscuro: una escala de azules sobre tinta azul marino.
+ * La idea visual del sitio es que el orden "enciende" las piezas: los
+ * fragmentos sueltos son oscuros y al armarse (o al quedar ordenados, en
+ * las barras) toman los azules claros de la escala.
  */
 :root {
-  --background: #0a0f19;
-  --foreground: #dde6f3;
-  --card: #101827;
-  --card-foreground: #dde6f3;
-  --elevada: #162136;
-  --popover: #162136;
-  --popover-foreground: #dde6f3;
-  --primary: #4c9dff;
-  --primary-foreground: #05101f;
-  --secondary: #1a2740;
-  --secondary-foreground: #dde6f3;
-  --muted: #162136;
-  --muted-foreground: #8d9db8;
-  --tenue: #5f6f8a;
-  --accent: #1a2740;
-  --accent-foreground: #dde6f3;
+  /* Escala de las facetas, de la sombra al brillo. */
+  --faceta-1: #0a1830;
+  --faceta-2: #0f2649;
+  --faceta-3: #15386d;
+  --faceta-4: #1d4f96;
+  --faceta-5: #2a6acb;
+  --faceta-6: #4a90f5;
+  --faceta-7: #86b8fb;
+  --faceta-8: #c9e1ff;
+
+  --background: #060c19;
+  --foreground: #e1ebf8;
+  --card: #0b1527;
+  --card-foreground: #e1ebf8;
+  --elevada: #122039;
+  --popover: #122039;
+  --popover-foreground: #e1ebf8;
+  --primary: #4a90f5;
+  --primary-foreground: #03101f;
+  --secondary: #14243f;
+  --secondary-foreground: #e1ebf8;
+  --muted: #122039;
+  --muted-foreground: #8ea2c3;
+  --tenue: #5b6f92;
+  --accent: #14243f;
+  --accent-foreground: #e1ebf8;
   --destructive: #ff7a85;
-  --border: #212e47;
-  --input: #2a3a58;
-  --ring: #4c9dff;
-  --radius: 0.5rem;
+  --border: #1b2b48;
+  --input: #263d66;
+  --ring: #86b8fb;
+  --radius: 0.25rem;
 
-  --sidebar: #070b13;
-  --sidebar-foreground: #c3cfe2;
-  --sidebar-accent: #131d30;
-  --sidebar-border: #182235;
+  --sidebar: #040914;
+  --sidebar-foreground: #c0cde3;
+  --sidebar-accent: #0e1a30;
+  --sidebar-border: #13213a;
 
-  --estado-normal: #40506e;
-  --estado-fuera: #1c2639;
-  --estado-descartado: #172031;
-  --estado-ordenado: #4c9dff;
-  --estado-activo: #eef3fb;
+  --estado-normal: #33496f;
+  --estado-fuera: #16233a;
+  --estado-descartado: #111c30;
+  --estado-ordenado: #4a90f5;
+  --estado-activo: #eef4fd;
   --estado-pivote: #f074b4;
   --estado-comparando: #f6b93f;
   --estado-encontrado: #3ddc97;
@@ -153,6 +172,89 @@
 }
 
 @layer components {
+  /*
+   * Panel con la esquina superior derecha cortada en diagonal, como un
+   * fragmento. El corte lo hace clip-path; la línea diagonal, ::after.
+   */
+  .facetado {
+    --corte: 16px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - var(--corte)) 0, 100% var(--corte), 100% 100%, 0 100%);
+  }
+  .facetado::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 5;
+    width: var(--corte);
+    height: var(--corte);
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom left,
+      transparent calc(50% - 1px),
+      var(--borde-faceta, var(--border)) calc(50% - 1px),
+      var(--borde-faceta, var(--border)) calc(50% + 0.5px),
+      transparent calc(50% + 0.5px)
+    );
+  }
+
+  /* Botón con una esquina cortada. clip-path recorta el contorno de foco, así que va por dentro. */
+  .corte {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  }
+  .corte:focus-visible {
+    outline-offset: -4px;
+    outline-color: var(--primary-foreground);
+  }
+
+  /* Botón principal del reproductor: un hexágono, seis triángulos. */
+  .hexagono {
+    clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+  }
+  .hexagono:focus-visible {
+    outline-offset: -9px;
+    outline-color: var(--primary-foreground);
+  }
+
+  /* Barras del visualizador: dos caras, como un prisma visto de frente. */
+  .barra-prisma {
+    background-image: linear-gradient(90deg, rgb(255 255 255 / 0.07) 0 50%, rgb(0 0 0 / 0.12) 50% 100%);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  }
+
+  /* Marcador triangular del enlace activo en el menú. */
+  .enlace-activo {
+    position: relative;
+  }
+  .enlace-activo::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 6px;
+    height: 11px;
+    translate: 0 -50%;
+    background: var(--primary);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  /* Piezas del arte de fragmentos: vuelan a su lugar una sola vez. */
+  .fragmento {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: armar 1.15s cubic-bezier(0.2, 0.75, 0.2, 1) var(--retraso, 0s) both;
+  }
+  .fragmento-quieto {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fragmento {
+      animation: none;
+    }
+  }
+
   /* Texto corrido de las fichas y artículos. */
   .prosa {
     max-width: 68ch;
@@ -182,8 +284,21 @@
     color: var(--foreground);
   }
   .prosa ul {
-    list-style: disc;
+    list-style: none;
     padding-left: 1.2em;
+  }
+  .prosa ul > li {
+    position: relative;
+  }
+  .prosa ul > li::before {
+    content: '';
+    position: absolute;
+    top: 0.6em;
+    left: -1.05em;
+    width: 0.42em;
+    height: 0.5em;
+    background: var(--faceta-6);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
   }
   .prosa ol {
     list-style: decimal;
@@ -194,5 +309,19 @@
   }
   .prosa li::marker {
     color: var(--tenue);
+  }
+}
+
+@keyframes armar {
+  from {
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--giro, 0deg)) scale(0.6);
+  }
+  45% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

@@ -46,7 +46,7 @@ export function Barras({ paso, objetivo, maximo: maximoFijo, duracion = 0.25, al
                   <div
                     data-estado={estado}
                     className={cn(
-                      'w-full rounded-t-[3px] transition-colors duration-150',
+                      'barra-prisma w-full transition-colors duration-150',
                       APARIENCIA[estado].clase,
                     )}
                     style={{ height: `${Math.max((elemento.valor / maximo) * 100, 4)}%` }}
@@ -84,7 +84,7 @@ export function Barras({ paso, objetivo, maximo: maximoFijo, duracion = 0.25, al
       <div className={cn('grid h-2.5', separacion)} style={columnas} aria-hidden="true">
         {rango && rango[0] <= rango[1] && (
           <div
-            className="rounded-b-sm border-x border-b border-primary/60"
+            className="border-x border-b border-primary/60"
             style={{ gridColumn: `${rango[0] + 1} / ${rango[1] + 2}` }}
           />
         )}

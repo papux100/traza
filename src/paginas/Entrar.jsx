@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { Campo } from '@/componentes/Campo'
+import { MarcoCuenta } from '@/componentes/MarcoCuenta'
 import { Button } from '@/componentes/ui/button'
 import { useSesion } from '@/stores/sesion'
 import { destinoTrasEntrar, validarCuenta } from './formularios'
@@ -41,7 +42,7 @@ export default function Entrar() {
   }
 
   return (
-    <div className="max-w-md">
+    <MarcoCuenta semilla={11}>
       <h1 className="text-4xl">Iniciar sesión</h1>
       <p className="mt-3 text-foreground/85">Entra para ver todas las fichas del catálogo.</p>
 
@@ -65,7 +66,7 @@ export default function Entrar() {
         />
 
         {errorGeneral && (
-          <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm">
+          <p role="alert" className="rounded-[3px] border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm">
             {errorGeneral}
           </p>
         )}
@@ -81,6 +82,6 @@ export default function Entrar() {
           Crea una
         </Link>
       </p>
-    </div>
+    </MarcoCuenta>
   )
 }

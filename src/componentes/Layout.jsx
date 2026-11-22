@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { Lock, LogOut, Menu, X } from 'lucide-react'
+import { Grieta, Logotipo } from '@/componentes/Fragmentos'
 import { Button, buttonVariants } from '@/componentes/ui/button'
 import { BLOQUES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
 import { cn } from '@/lib/utils'
@@ -15,21 +16,16 @@ const paginas = [
 
 const claseEnlace = ({ isActive }) =>
   cn(
-    'block rounded-md px-3 py-1.5 text-sm transition-colors',
+    'block rounded-[3px] px-3 py-1.5 text-sm transition-colors',
     isActive
-      ? 'bg-sidebar-accent font-medium text-foreground shadow-[inset_2px_0_0_var(--primary)]'
+      ? 'enlace-activo bg-sidebar-accent font-medium text-foreground'
       : 'text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-foreground',
   )
 
 function Marca() {
   return (
     <Link to="/" className="flex items-center gap-2.5 rounded-md" aria-label="Traza, ir al catálogo">
-      <svg viewBox="0 0 28 28" className="size-7" aria-hidden="true">
-        <rect x="2" y="16" width="5" height="10" rx="1.2" fill="var(--estado-normal)" />
-        <rect x="9" y="11" width="5" height="15" rx="1.2" fill="var(--estado-normal)" />
-        <rect x="16" y="6" width="5" height="20" rx="1.2" fill="var(--primary)" />
-        <rect x="23" y="2" width="5" height="24" rx="1.2" fill="var(--primary)" />
-      </svg>
+      <Logotipo />
       <span className="font-heading text-xl font-[650] tracking-tight [font-stretch:112%]">Traza</span>
     </Link>
   )
@@ -46,7 +42,7 @@ function Cuenta() {
 
   if (usuario) {
     return (
-      <div className="flex items-center justify-between gap-2 rounded-md bg-sidebar-accent/60 py-1.5 pr-1.5 pl-3">
+      <div className="flex items-center justify-between gap-2 rounded-[3px] bg-sidebar-accent/60 py-1.5 pr-1.5 pl-3">
         <div className="min-w-0">
           <p className="text-xs text-tenue">Sesión iniciada</p>
           <p className="truncate text-sm font-medium">{nombreVisible({ usuario, perfil })}</p>
@@ -148,7 +144,7 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen lg:pl-64">
+    <div className="min-h-screen overflow-x-clip lg:pl-64">
       <a
         href="#contenido"
         className="sr-only rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
@@ -193,7 +189,8 @@ export function Layout() {
         <Outlet />
       </main>
 
-      <footer className="mx-auto w-full max-w-5xl border-t px-5 py-8 text-sm text-tenue sm:px-8">
+      <footer className="mx-auto w-full max-w-5xl px-5 pb-8 text-sm text-tenue sm:px-8">
+        <Grieta semilla={9} className="mb-6" />
         Proyecto de la materia Aplicaciones Web, Facultad de Ingeniería, Arquitectura y Diseño, UABC.
       </footer>
     </div>
