@@ -2,11 +2,63 @@ import { supabase, supabaseConfigurado } from '@/lib/supabase'
 
 /**
  * Todo lo que el sitio le pide al backend pasa por este archivo.
- * Los componentes no llaman a Supabase directamente: llaman a estas funciones,
- * igual que en la Pokédex se llamaba a la PokeAPI desde el store.
+ *
+ * - Los datos (catálogo, fichas, perfil) se piden a nuestra API de Fastify
+ *   con fetch, igual que en la Pokédex se le pedían a la PokeAPI.
+ * - Las cuentas (registro, inicio y cierre de sesión) las maneja Supabase Auth.
+ *   El token de la sesión viaja a la API en el encabezado Authorization.
  */
 
-export class ErrorApi extends Error {}
+export class ErrorApi extends Error {
+  constructor(mensaje, { estado, codigo } = {}) {
+    super(mensaje)
+    this.estado = estado
+    this.codigo = codigo
+  }
+}
+
+/**
+ * Dirección de la API. En desarrollo queda vacía y Vite reenvía /api al
+ * servidor local (ver vite.config.js). Al publicar, se configura VITE_API_URL.
+ */
+const URL_API = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+
+async function tokenDeSesion() {
+  if (!supabaseConfigurado) return null
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
+}
+
+async function pedir(ruta, { metodo = 'GET', cuerpo } = {}) {
+  if (import.meta.env.PROD && !URL_API) {
+    throw new ErrorApi('Falta configurar la dirección de la API. Agrega VITE_API_URL en las variables de entorno del hospedaje.')
+  }
+
+  const token = await tokenDeSesion()
+  let respuesta
+  try {
+    respuesta = await fetch(`${URL_API}${ruta}`, {
+      method: metodo,
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(cuerpo !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      },
+      body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+    })
+  } catch {
+    throw new ErrorApi('No se pudo conectar con el servidor. Revisa tu conexión o que la API esté encendida.')
+  }
+
+  const datos = await respuesta.json().catch(() => null)
+  if (!respuesta.ok) {
+    throw new ErrorApi(datos?.error ?? 'Ocurrió un error inesperado. Intenta de nuevo.', {
+      estado: respuesta.status,
+      codigo: datos?.codigo,
+    })
+  }
+  if (datos === null) throw new ErrorApi('El servidor respondió algo que no es JSON. Revisa la dirección de la API.')
+  return datos
+}
 
 function cliente() {
   if (!supabaseConfigurado) {
@@ -55,51 +107,42 @@ async function intentar(operacion) {
   }
 }
 
-/* ---------- Catálogo ---------- */
-
-/** Convierte una fila de la tabla `algoritmos` al formato que usa la interfaz. */
-function aAlgoritmo(fila) {
-  return {
-    id: fila.id,
-    nombre: fila.nombre,
-    nombreCorto: fila.nombre_corto,
-    familia: fila.familia,
-    bloque: fila.bloque,
-    intencion: fila.intencion,
-    complejidad: { mejor: fila.complejidad_mejor, promedio: fila.complejidad_promedio, peor: fila.complejidad_peor },
-    espacio: fila.espacio,
-    estable: fila.estable,
-    enSitio: fila.en_sitio,
-    requisito: fila.requisito,
-    publico: fila.publico,
-  }
-}
-
-function aFicha(fila) {
-  return {
-    analogia: fila.analogia,
-    comoFunciona: fila.como_funciona,
-    requisitos: fila.requisitos,
-    complejidad: fila.complejidad,
-    usarlo: fila.usarlo,
-    evitarlo: fila.evitarlo,
-    implementacion: fila.implementacion,
-    relaciones: fila.relaciones,
-  }
-}
+/* ---------- Catálogo (API de Fastify) ---------- */
 
 export async function obtenerAlgoritmos() {
-  const filas = await intentar(() => cliente().from('algoritmos').select('*').order('orden'))
-  return filas.map(aAlgoritmo)
+  const { algoritmos } = await pedir('/api/algoritmos')
+  return algoritmos
 }
 
 /**
- * Devuelve la ficha, o null si no existe o si las reglas de acceso no
- * permiten leerla (por ejemplo, una ficha privada sin sesión iniciada).
+ * Devuelve la ficha, o null si es privada y no hay sesión iniciada
+ * (la API responde 401 con el código requiere_cuenta).
  */
 export async function obtenerFicha(id) {
-  const fila = await intentar(() => cliente().from('fichas').select('*').eq('algoritmo_id', id).maybeSingle())
-  return fila ? aFicha(fila) : null
+  try {
+    const { ficha } = await pedir(`/api/fichas/${encodeURIComponent(id)}`)
+    return ficha
+  } catch (error) {
+    if (error.codigo === 'requiere_cuenta') return null
+    throw error
+  }
+}
+
+/**
+ * Ejecuta un algoritmo en el servidor y devuelve su traza:
+ * { algoritmo, entrada, objetivo, resultado, pasos }.
+ * Sin entrada, el servidor usa los datos de ejemplo del algoritmo.
+ */
+export async function ejecutarAlgoritmo(id, { entrada, objetivo } = {}) {
+  const cuerpo = {}
+  if (entrada !== undefined) cuerpo.entrada = entrada
+  if (objetivo !== undefined && objetivo !== null) cuerpo.objetivo = objetivo
+  return pedir(`/api/algoritmos/${encodeURIComponent(id)}/ejecucion`, { metodo: 'POST', cuerpo })
+}
+
+export async function obtenerPerfil() {
+  const { perfil } = await pedir('/api/perfil')
+  return perfil
 }
 
 /* ---------- Cuentas ---------- */
@@ -118,10 +161,6 @@ export async function iniciarSesion({ correo, contrasena }) {
 
 export async function cerrarSesion() {
   await intentar(() => cliente().auth.signOut())
-}
-
-export async function obtenerPerfil(id) {
-  return intentar(() => cliente().from('perfiles').select('nombre').eq('id', id).maybeSingle())
 }
 
 /**

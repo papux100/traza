@@ -10,6 +10,12 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    // En desarrollo, las peticiones a /api se reenvían al servidor Fastify local.
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
   build: {
     // El cliente de Supabase hace crecer el paquete; el aviso de tamaño no aplica aquí.
     chunkSizeWarningLimit: 800,

@@ -1,32 +1,73 @@
 import { createStore } from 'zustand/vanilla'
 
+import { ejecutarAlgoritmo } from '@/servicios/api'
+
 /**
  * Fábrica de reproductores.
  *
  * Cada visualizador crea el suyo, en lugar de compartir un store global.
- * Así pueden convivir varios en una misma página (por ejemplo, para comparar
- * dos algoritmos lado a lado) sin pisarse.
+ * Así pueden convivir varios en una misma página sin pisarse.
  *
- * El reproductor no sabe qué algoritmo ejecutó ni cómo se dibuja: sólo
- * guarda una lista de pasos y la posición actual dentro de ella.
+ * El algoritmo se ejecuta en el servidor: el reproductor le manda la entrada,
+ * recibe la traza (la lista de pasos) y desde ahí sólo se mueve por ella.
+ * No sabe cómo se calculó cada paso ni cómo se dibuja.
+ *
+ * `ejecutar` se puede sustituir en las pruebas por una versión falsa.
  */
-export function crearReproductor(algoritmo, inicial = {}) {
-  function generar(entrada, objetivo) {
-    const { pasos, resultado } = algoritmo.ejecutar(entrada, objetivo)
-    return { entrada, objetivo, pasos, resultado }
-  }
+export function crearReproductor(algoritmoId, { ejecutar = ejecutarAlgoritmo } = {}) {
+  // Si el usuario pide dos ejecuciones seguidas, sólo cuenta la última respuesta.
+  let ultimaPeticion = 0
 
   return createStore((set, get) => ({
-    ...generar(
-      inicial.entrada ?? algoritmo.entradaPorDefecto,
-      inicial.objetivo ?? algoritmo.objetivoPorDefecto,
-    ),
+    /** Datos que manda el servidor: código, familia, leyenda, valor máximo. */
+    algoritmo: null,
+    entrada: [],
+    objetivo: null,
+    pasos: [],
+    resultado: null,
     indice: 0,
     reproduciendo: false,
+    /** 'inicial' | 'cargando' | 'listo' | 'error' | 'bloqueado' */
+    estado: 'inicial',
+    error: null,
+    /** true mientras se vuelve a ejecutar con una entrada nueva. */
+    recalculando: false,
 
-    /** Ejecuta el algoritmo con una entrada nueva y vuelve al primer paso. */
-    cargar(entrada, objetivo = get().objetivo) {
-      set({ ...generar(entrada, objetivo), indice: 0, reproduciendo: false })
+    /**
+     * Pide al servidor la traza para una entrada. Sin entrada, el servidor usa
+     * los datos de ejemplo. Devuelve { ok, error } para que el editor pueda
+     * mostrar el mensaje junto al campo.
+     */
+    async cargar(entrada, objetivo) {
+      const numero = ++ultimaPeticion
+      const primeraVez = get().pasos.length === 0
+      set(primeraVez ? { estado: 'cargando', error: null } : { recalculando: true, reproduciendo: false })
+
+      try {
+        const traza = await ejecutar(algoritmoId, { entrada, objetivo })
+        if (numero !== ultimaPeticion) return { ok: false }
+        set({
+          algoritmo: traza.algoritmo,
+          entrada: traza.entrada,
+          objetivo: traza.objetivo,
+          pasos: traza.pasos,
+          resultado: traza.resultado,
+          indice: 0,
+          reproduciendo: false,
+          estado: 'listo',
+          error: null,
+          recalculando: false,
+        })
+        return { ok: true }
+      } catch (error) {
+        if (numero !== ultimaPeticion) return { ok: false }
+        if (primeraVez) {
+          set({ estado: error.codigo === 'requiere_cuenta' ? 'bloqueado' : 'error', error: error.message })
+        } else {
+          set({ recalculando: false })
+        }
+        return { ok: false, error: error.message }
+      }
     },
 
     avanzar() {
@@ -43,7 +84,7 @@ export function crearReproductor(algoritmo, inicial = {}) {
     /** Paso manual hacia adelante: detiene la reproducción automática. */
     siguiente() {
       const { indice, pasos } = get()
-      set({ indice: Math.min(indice + 1, pasos.length - 1), reproduciendo: false })
+      set({ indice: Math.max(Math.min(indice + 1, pasos.length - 1), 0), reproduciendo: false })
     },
 
     retroceder() {
@@ -52,11 +93,12 @@ export function crearReproductor(algoritmo, inicial = {}) {
 
     irA(posicion) {
       const ultimo = get().pasos.length - 1
-      set({ indice: Math.min(Math.max(Math.round(posicion), 0), ultimo), reproduciendo: false })
+      set({ indice: Math.max(Math.min(Math.round(posicion), ultimo), 0), reproduciendo: false })
     },
 
     alternar() {
       const { reproduciendo, indice, pasos } = get()
+      if (pasos.length === 0) return
       if (reproduciendo) {
         set({ reproduciendo: false })
         return

@@ -12,6 +12,7 @@ export function EditorEntrada({ reproductor, algoritmo }) {
   const valorMax = algoritmo.valorMax ?? VALOR_MAX
   const entrada = useStore(reproductor, (s) => s.entrada)
   const objetivo = useStore(reproductor, (s) => s.objetivo)
+  const recalculando = useStore(reproductor, (s) => s.recalculando)
   const [texto, setTexto] = useState(entrada.join(', '))
   const [textoObjetivo, setTextoObjetivo] = useState(String(objetivo ?? ''))
   const [error, setError] = useState(null)
@@ -32,7 +33,13 @@ export function EditorEntrada({ reproductor, algoritmo }) {
     }
 
     setError(null)
-    reproductor.getState().cargar(arreglo.valores, buscado)
+    ejecutar(arreglo.valores, buscado)
+  }
+
+  /** El servidor vuelve a validar la entrada; si la rechaza, se muestra aquí. */
+  async function ejecutar(valores, buscado) {
+    const { error: errorServidor } = await reproductor.getState().cargar(valores, buscado)
+    if (errorServidor) setError(errorServidor)
   }
 
   function aleatorio() {
@@ -47,7 +54,7 @@ export function EditorEntrada({ reproductor, algoritmo }) {
     setTexto(valores.join(', '))
     if (esBusqueda) setTextoObjetivo(String(buscado))
     setError(null)
-    reproductor.getState().cargar(valores, buscado)
+    ejecutar(valores, buscado)
   }
 
   return (
@@ -93,10 +100,10 @@ export function EditorEntrada({ reproductor, algoritmo }) {
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" variant="secondary">
-            Ejecutar con estos datos
+          <Button type="submit" variant="secondary" disabled={recalculando}>
+            {recalculando ? 'Ejecutando…' : 'Ejecutar con estos datos'}
           </Button>
-          <Button type="button" variant="outline" onClick={aleatorio}>
+          <Button type="button" variant="outline" onClick={aleatorio} disabled={recalculando}>
             <Shuffle />
             Aleatorio
           </Button>
@@ -110,8 +117,8 @@ export function EditorEntrada({ reproductor, algoritmo }) {
       ) : (
         <p className="text-xs text-tenue">
           Hasta {MAX_ELEMENTOS} enteros entre {VALOR_MIN} y {valorMax}, separados por comas o espacios.
-          {algoritmo.valorMax && ' Este algoritmo necesita un rango de valores pequeño, por eso el máximo es menor.'}
-          {algoritmo.prepararEntrada && ' Este algoritmo exige datos ordenados, así que tu arreglo se ordena antes de empezar.'}
+          {valorMax < VALOR_MAX && ' Este algoritmo necesita un rango de valores pequeño, por eso el máximo es menor.'}
+          {algoritmo.ordenaEntrada && ' Este algoritmo exige datos ordenados, así que tu arreglo se ordena antes de empezar.'}
         </p>
       )}
     </form>

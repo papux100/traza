@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'react-router'
+import { Lock } from 'lucide-react'
 import { MotionConfig } from 'motion/react'
 import { useStore } from 'zustand'
-import { obtenerAlgoritmo } from '@/algoritmos/registro'
+import { EstadoCarga } from '@/componentes/EstadoCarga'
+import { buttonVariants } from '@/componentes/ui/button'
 import { usePreferencias } from '@/motor/preferencias'
 import { crearReproductor } from '@/motor/reproductor'
 import { cn } from '@/lib/utils'
@@ -17,19 +20,63 @@ const prefiereMenosMovimiento = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
- * Une las tres capas: pide la traza al algoritmo, la entrega a un reproductor
- * propio y dibuja el paso actual.
+ * Pide al servidor la traza del algoritmo y, cuando llega, la reproduce.
  *
  * `compacto` oculta el código y el editor (se usa en la portada).
  */
 export function Visualizador({ algoritmoId, compacto = false, autoReproducir = false, className }) {
-  const algoritmo = obtenerAlgoritmo(algoritmoId)
-  const [reproductor] = useState(() => crearReproductor(algoritmo))
+  const [reproductor] = useState(() => crearReproductor(algoritmoId))
+  const estado = useStore(reproductor, (s) => s.estado)
+  const error = useStore(reproductor, (s) => s.error)
 
+  useEffect(() => {
+    reproductor.getState().cargar()
+  }, [reproductor])
+
+  const marco = cn('overflow-hidden rounded-xl border bg-card', className)
+
+  if (estado === 'listo') {
+    return (
+      <VisualizadorListo reproductor={reproductor} compacto={compacto} autoReproducir={autoReproducir} className={marco} />
+    )
+  }
+
+  return (
+    <section aria-label="Visualizador" className={cn(marco, 'flex items-center px-6', compacto ? 'min-h-72' : 'min-h-96')}>
+      {estado === 'bloqueado' ? (
+        <Bloqueado />
+      ) : (
+        <EstadoCarga
+          error={estado === 'error' ? error : null}
+          texto="Ejecutando el algoritmo en el servidor…"
+          alReintentar={() => reproductor.getState().cargar()}
+        />
+      )}
+    </section>
+  )
+}
+
+function Bloqueado() {
+  const { pathname } = useLocation()
+  return (
+    <div className="max-w-md">
+      <Lock className="size-5 text-primary" aria-hidden="true" />
+      <p className="mt-2 font-medium">Este algoritmo es para usuarios registrados</p>
+      <p className="mt-1 text-sm text-foreground/85">Crea una cuenta gratis para ejecutarlo paso a paso.</p>
+      <Link to="/registro" state={{ desde: pathname }} className={cn(buttonVariants({ size: 'sm' }), 'mt-3')}>
+        Crear cuenta
+      </Link>
+    </div>
+  )
+}
+
+function VisualizadorListo({ reproductor, compacto, autoReproducir, className }) {
+  const algoritmo = useStore(reproductor, (s) => s.algoritmo)
   const paso = useStore(reproductor, (s) => s.pasos[s.indice])
   const pasos = useStore(reproductor, (s) => s.pasos)
   const objetivo = useStore(reproductor, (s) => s.objetivo)
   const reproduciendo = useStore(reproductor, (s) => s.reproduciendo)
+  const recalculando = useStore(reproductor, (s) => s.recalculando)
   const velocidad = usePreferencias((s) => s.velocidad)
   const esBusqueda = algoritmo.familia === 'busqueda'
 
@@ -75,11 +122,12 @@ export function Visualizador({ algoritmoId, compacto = false, autoReproducir = f
     <MotionConfig reducedMotion="user">
       <section
         aria-label={`Visualizador: ${algoritmo.nombreFuncion}`}
+        aria-busy={recalculando || undefined}
         onKeyDown={alPulsarTecla}
-        className={cn('overflow-hidden rounded-xl border bg-card', className)}
+        className={className}
       >
         <div className={cn('grid', !compacto && 'xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)]')}>
-          <div className="flex min-w-0 flex-col gap-4 p-4 sm:p-6">
+          <div className={cn('flex min-w-0 flex-col gap-4 p-4 transition-opacity sm:p-6', recalculando && 'opacity-50')}>
             <Barras
               paso={paso}
               objetivo={esBusqueda ? objetivo : undefined}

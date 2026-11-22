@@ -29,7 +29,7 @@ export const useSesion = create((set, get) => ({
     const usuario = get().usuario
     if (!usuario) return
     try {
-      const perfil = await api.obtenerPerfil(usuario.id)
+      const perfil = await api.obtenerPerfil()
       if (get().usuario?.id === usuario.id) set({ perfil })
     } catch {
       // Sin perfil se muestra el correo; no hace falta interrumpir al usuario.

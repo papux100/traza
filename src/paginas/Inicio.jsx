@@ -53,13 +53,13 @@ export default function Inicio() {
       <section aria-labelledby="demostracion" className="mt-10">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 id="demostracion" className="font-sans text-base font-medium tracking-normal text-muted-foreground [font-stretch:100%]">
-            Quicksort ordenando ocho números
+            Inserción ordenando siete números
           </h2>
-          <Link to={rutaDe('quicksort')} className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link to={rutaDe('insercion')} className="text-sm text-primary underline-offset-4 hover:underline">
             Abrir la ficha con el código
           </Link>
         </div>
-        <Visualizador algoritmoId="quicksort" compacto autoReproducir />
+        <Visualizador algoritmoId="insercion" compacto autoReproducir />
       </section>
 
       {!conSesion && privados > 0 && (

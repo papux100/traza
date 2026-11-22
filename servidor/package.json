@@ -1,0 +1,24 @@
+{
+  "name": "traza-servidor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "API de Traza con Fastify: catálogo, fichas y perfil, sobre la base de datos de Supabase.",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch --env-file-if-exists=.env src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@fastify/compress": "^9.3.0",
+    "@fastify/cors": "^11.4.1",
+    "@fastify/rate-limit": "^11.2.2",
+    "@supabase/supabase-js": "^2.119.0",
+    "fastify": "^5.12.8",
+    "pg": "^8.23.1"
+  }
+}
