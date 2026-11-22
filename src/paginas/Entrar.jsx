@@ -78,7 +78,7 @@ export default function Entrar() {
 
       <p className="mt-6 text-sm text-muted-foreground">
         ¿No tienes cuenta?{' '}
-        <Link to="/registro" state={state} className="text-primary underline underline-offset-4">
+        <Link to="/registro" state={state} className="text-enlace underline underline-offset-4">
           Crea una
         </Link>
       </p>

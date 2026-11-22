@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { Lock } from 'lucide-react'
 import { EstadoCarga } from '@/componentes/EstadoCarga'
-import { Fragmentos, Grieta } from '@/componentes/Fragmentos'
+import { Estallido, Grieta } from '@/componentes/Fragmentos'
 import { buttonVariants } from '@/componentes/ui/button'
 import { Visualizador } from '@/componentes/visualizador/Visualizador'
 import { BLOQUES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
@@ -16,7 +16,7 @@ function Fila({ algoritmo, bloqueado }) {
         to={rutaDe(algoritmo.id)}
         className="group grid gap-x-6 gap-y-1 px-4 py-3.5 transition-colors hover:bg-card sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-baseline"
       >
-        <span className="font-medium text-primary underline-offset-4 group-hover:underline">
+        <span className="font-medium text-enlace underline-offset-4 group-hover:underline">
           {algoritmo.nombreCorto}
         </span>
         <span className="text-[0.9375rem] leading-relaxed text-foreground/85">{algoritmo.intencion}</span>
@@ -44,26 +44,33 @@ export default function Inicio() {
 
   return (
     <>
-      <header className="relative isolate pt-2 pb-6 lg:min-h-[26rem]">
+      {/* Los fragmentos llegan hasta las orillas de la pantalla (o del menú lateral). */}
+      <header className="relative isolate -mt-10 overflow-y-clip pt-20 pb-16 text-center lg:-mt-14 lg:pt-28 lg:pb-24">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-12 -right-28 -z-10 h-[24rem] w-[15rem] opacity-30 sm:-right-12 sm:h-[30rem] sm:w-[20rem] sm:opacity-60 lg:-top-8 lg:right-[-2.5rem] lg:h-[34rem] lg:w-[23rem] lg:opacity-100"
+          className="pointer-events-none absolute inset-y-0 left-[calc(50%-50vw)] -z-10 w-[34vw] opacity-50 sm:opacity-80 lg:left-[calc(50%-50vw+8rem)] lg:w-[min(26vw,26rem)] lg:opacity-100 [mask-image:linear-gradient(to_bottom,black_72%,transparent)]"
         >
-          <Fragmentos semilla={7} />
+          <Estallido semilla={3} lado="izquierdo" className="w-full" />
         </div>
-        <div className="max-w-[36rem]">
-          <h1 className="text-[2.6rem] leading-[1.05] sm:text-6xl">Mira cómo piensa un algoritmo, un paso a la vez</h1>
-          <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-foreground/85">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-[calc(50%-50vw)] -z-10 w-[34vw] opacity-50 sm:opacity-80 lg:right-[calc(50%-50vw+8rem)] lg:w-[min(26vw,26rem)] lg:opacity-100 [mask-image:linear-gradient(to_bottom,black_72%,transparent)]"
+        >
+          <Estallido semilla={8} lado="derecho" className="w-full" />
+        </div>
+        <div className="mx-auto max-w-[34rem]">
+          <h1 className="text-[2.5rem] leading-[1.05] sm:text-6xl">Mira cómo piensa un algoritmo, un paso a la vez</h1>
+          <p className="mx-auto mt-6 max-w-[46ch] text-lg leading-relaxed text-foreground/85">
             Un catálogo de algoritmos de ordenamiento y búsqueda. Cada ficha explica cuándo conviene usar el algoritmo y
             te deja ejecutarlo con tus propios datos: avanza, retrocede y sigue en el código la línea que se está
             ejecutando.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#catalogo" className={cn(buttonVariants(), 'h-10 px-5')}>
               Ver el catálogo
             </a>
             {!conSesion && (
-              <Link to="/registro" className={cn(buttonVariants({ variant: 'outline' }), 'h-10 px-5')}>
+              <Link to="/registro" className={cn(buttonVariants({ variant: 'outline' }), 'h-10 bg-background px-5')}>
                 Crear cuenta gratis
               </Link>
             )}
@@ -71,14 +78,14 @@ export default function Inicio() {
         </div>
       </header>
 
-      <Grieta semilla={5} className="mt-6 mb-8" />
+      <Grieta semilla={5} className="mb-8" />
 
       <section aria-labelledby="demostracion">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 id="demostracion" className="font-sans text-base font-medium tracking-normal text-muted-foreground [font-stretch:100%]">
             Inserción ordenando siete números
           </h2>
-          <Link to={rutaDe('insercion')} className="text-sm text-primary underline-offset-4 hover:underline">
+          <Link to={rutaDe('insercion')} className="text-sm text-enlace underline-offset-4 hover:underline">
             Abrir la ficha con el código
           </Link>
         </div>
@@ -88,7 +95,7 @@ export default function Inicio() {
       {!conSesion && privados > 0 && (
         <p className="facetado mt-10 max-w-[68ch] border bg-card px-4 py-3 text-[0.9375rem] text-foreground/90">
           Sin cuenta puedes abrir {algoritmos.length - privados} fichas.{' '}
-          <Link to="/registro" className="text-primary underline underline-offset-4">
+          <Link to="/registro" className="text-enlace underline underline-offset-4">
             Crea una cuenta gratis
           </Link>{' '}
           para ver las {algoritmos.length} completas.
@@ -134,7 +141,7 @@ export default function Inicio() {
         </h2>
         <div>
           <h3 className="text-lg">
-            <Link to="/comparativa" className="text-primary underline-offset-4 hover:underline">
+            <Link to="/comparativa" className="text-enlace underline-offset-4 hover:underline">
               Tabla comparativa
             </Link>
           </h3>
@@ -144,7 +151,7 @@ export default function Inicio() {
         </div>
         <div>
           <h3 className="text-lg">
-            <Link to="/conceptos" className="text-primary underline-offset-4 hover:underline">
+            <Link to="/conceptos" className="text-enlace underline-offset-4 hover:underline">
               Conceptos previos
             </Link>
           </h3>

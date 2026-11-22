@@ -7,7 +7,7 @@ import { useCatalogo } from '@/stores/catalogo'
 function Nombre({ algoritmo }) {
   return (
     <TableCell className="font-medium">
-      <Link to={rutaDe(algoritmo.id)} className="text-primary underline-offset-4 hover:underline">
+      <Link to={rutaDe(algoritmo.id)} className="text-enlace underline-offset-4 hover:underline">
         {algoritmo.nombreCorto}
       </Link>
     </TableCell>
@@ -36,7 +36,7 @@ export default function Comparativa() {
         <h1 className="text-4xl sm:text-5xl">Tabla comparativa</h1>
         <p className="mt-5 max-w-[62ch] text-lg leading-relaxed text-foreground/85">
           Los algoritmos del catálogo lado a lado. Si algún término no te resulta familiar, está explicado en{' '}
-          <Link to="/conceptos" className="text-primary underline underline-offset-4">
+          <Link to="/conceptos" className="text-enlace underline underline-offset-4">
             conceptos previos
           </Link>
           .

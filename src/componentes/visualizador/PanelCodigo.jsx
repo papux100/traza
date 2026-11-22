@@ -67,7 +67,7 @@ export function PanelCodigo({ codigo, lineaActiva }) {
                     <span
                       className={cn(
                         'w-10 shrink-0 pr-3 text-right select-none',
-                        activa ? 'text-primary' : 'text-tenue',
+                        activa ? 'text-enlace' : 'text-tenue',
                       )}
                     >
                       {numero}

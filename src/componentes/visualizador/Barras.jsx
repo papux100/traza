@@ -98,7 +98,7 @@ export function Barras({ paso, objetivo, maximo: maximoFijo, duracion = 0.25, al
             {(marcadoresPorIndice.get(i) ?? []).map((etiqueta) => (
               <span
                 key={etiqueta}
-                className="rounded-sm bg-secondary px-1 font-mono text-[0.6875rem] leading-4 whitespace-nowrap text-primary"
+                className="rounded-sm bg-secondary px-1 font-mono text-[0.6875rem] leading-4 whitespace-nowrap text-enlace"
               >
                 {etiqueta}
               </span>

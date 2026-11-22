@@ -24,6 +24,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-enlace: var(--enlace);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -66,54 +67,54 @@
 }
 
 /*
- * Tema único, oscuro: una escala de azules sobre tinta azul marino.
- * La idea visual del sitio es que el orden "enciende" las piezas: los
- * fragmentos sueltos son oscuros y al armarse (o al quedar ordenados, en
- * las barras) toman los azules claros de la escala.
+ * Tema único, oscuro. Base: la paleta del proyecto
+ *   #05183c, #06296b, #1a3c7d (azules) y #101217, #0c0d0d (negros).
+ * --faceta-4 a --faceta-8 son tonos más claros de #1a3c7d: los tres azules
+ * de la paleta son demasiado oscuros para texto o para botones sobre negro.
  */
 :root {
-  /* Escala de las facetas, de la sombra al brillo. */
-  --faceta-1: #0a1830;
-  --faceta-2: #0f2649;
-  --faceta-3: #15386d;
-  --faceta-4: #1d4f96;
-  --faceta-5: #2a6acb;
-  --faceta-6: #4a90f5;
-  --faceta-7: #86b8fb;
-  --faceta-8: #c9e1ff;
+  --faceta-1: #05183c;
+  --faceta-2: #06296b;
+  --faceta-3: #1a3c7d;
+  --faceta-4: #24498f;
+  --faceta-5: #2f58a6;
+  --faceta-6: #4670c4;
+  --faceta-7: #86a5e3;
+  --faceta-8: #c5d4f3;
 
-  --background: #060c19;
-  --foreground: #e1ebf8;
-  --card: #0b1527;
-  --card-foreground: #e1ebf8;
-  --elevada: #122039;
-  --popover: #122039;
-  --popover-foreground: #e1ebf8;
-  --primary: #4a90f5;
-  --primary-foreground: #03101f;
-  --secondary: #14243f;
-  --secondary-foreground: #e1ebf8;
-  --muted: #122039;
-  --muted-foreground: #8ea2c3;
-  --tenue: #5b6f92;
-  --accent: #14243f;
-  --accent-foreground: #e1ebf8;
+  --background: #0c0d0d;
+  --foreground: #e6e9ef;
+  --card: #101217;
+  --card-foreground: #e6e9ef;
+  --elevada: #161a22;
+  --popover: #161a22;
+  --popover-foreground: #e6e9ef;
+  --primary: #2f58a6;
+  --primary-foreground: #ffffff;
+  --enlace: #86a5e3;
+  --secondary: #161a22;
+  --secondary-foreground: #e6e9ef;
+  --muted: #161a22;
+  --muted-foreground: #8d95a7;
+  --tenue: #5e6678;
+  --accent: #161a22;
+  --accent-foreground: #e6e9ef;
   --destructive: #ff7a85;
-  --border: #1b2b48;
-  --input: #263d66;
-  --ring: #86b8fb;
+  --border: #1f2431;
+  --input: #2b3346;
+  --ring: #86a5e3;
   --radius: 0.25rem;
 
-  --sidebar: #040914;
-  --sidebar-foreground: #c0cde3;
-  --sidebar-accent: #0e1a30;
-  --sidebar-border: #13213a;
+  --sidebar: #101217;
+  --sidebar-foreground: #c4c9d4;
+  --sidebar-accent: #05183c;
+  --sidebar-border: #1a1e28;
 
-  --estado-normal: #33496f;
-  --estado-fuera: #16233a;
-  --estado-descartado: #111c30;
-  --estado-ordenado: #4a90f5;
-  --estado-activo: #eef4fd;
+  --estado-normal: #2b3140;
+  --estado-fuera: #161a22;
+  --estado-descartado: #13161c;
+  --estado-ordenado: #4670c4;
+  --estado-activo: #eef1f6;
   --estado-pivote: #f074b4;
   --estado-comparando: #f6b93f;
   --estado-encontrado: #3ddc97;
@@ -235,22 +236,29 @@
     width: 6px;
     height: 11px;
     translate: 0 -50%;
-    background: var(--primary);
+    background: var(--enlace);
     clip-path: polygon(0 0, 100% 50%, 0 100%);
   }
 
-  /* Piezas del arte de fragmentos: vuelan a su lugar una sola vez. */
-  .fragmento {
+  /*
+   * Arte de fragmentos. Cada pieza guarda su posición final en --final.
+   * Las piezas empiezan enteras y se separan; las esquirlas salen de la grieta.
+   */
+  .pieza,
+  .esquirla {
     transform-box: fill-box;
     transform-origin: center;
-    animation: armar 1.15s cubic-bezier(0.2, 0.75, 0.2, 1) var(--retraso, 0s) both;
+    transform: var(--final);
   }
-  .fragmento-quieto {
-    transform-box: fill-box;
-    transform-origin: center;
+  .pieza {
+    animation: fragmentar 1.5s cubic-bezier(0.16, 0.84, 0.3, 1) var(--retraso, 0s) both;
+  }
+  .esquirla {
+    animation: salir 1.6s cubic-bezier(0.16, 0.84, 0.3, 1) var(--retraso, 0s) both;
   }
   @media (prefers-reduced-motion: reduce) {
-    .fragmento {
+    .pieza,
+    .esquirla {
       animation: none;
     }
   }
@@ -268,13 +276,13 @@
     font-weight: 600;
   }
   .prosa a {
-    color: var(--primary);
+    color: var(--enlace);
     text-decoration: underline;
-    text-decoration-color: color-mix(in oklab, var(--primary) 45%, transparent);
+    text-decoration-color: color-mix(in oklab, var(--enlace) 45%, transparent);
     text-underline-offset: 3px;
   }
   .prosa a:hover {
-    text-decoration-color: var(--primary);
+    text-decoration-color: var(--enlace);
   }
   .prosa code {
     font-size: 0.9em;
@@ -312,16 +320,22 @@
   }
 }
 
-@keyframes armar {
+@keyframes fragmentar {
+  from {
+    transform: none;
+  }
+  to {
+    transform: var(--final);
+  }
+}
+
+@keyframes salir {
   from {
     opacity: 0;
-    transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--giro, 0deg)) scale(0.6);
-  }
-  45% {
-    opacity: 1;
+    transform: var(--inicio);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: var(--final);
   }
 }

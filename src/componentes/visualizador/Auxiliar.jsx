@@ -95,7 +95,7 @@ const CELDA = {
   normal: 'border-border text-foreground',
   activo: 'border-estado-activo bg-estado-activo text-background',
   comparando: 'border-estado-comparando bg-estado-comparando text-background',
-  ordenado: 'border-primary/60 text-primary',
+  ordenado: 'border-primary/60 text-enlace',
 }
 
 function ZonaConteo({ aux, estadosPorId, maximo, duracion }) {

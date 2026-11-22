@@ -2,16 +2,13 @@ import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
 /*
- * Arte generativo del sitio: fragmentos triangulares en la escala de azules.
+ * Arte del sitio: triángulos que se fragmentan.
  *
- * Todo sale de una semilla, así que el dibujo es el mismo en cada visita y
- * en el servidor de pruebas. La columna se sombrea como un relieve de verdad:
- * cada triángulo tiene una altura en sus vértices y su tono depende de hacia
- * dónde mira respecto a una luz que viene de arriba a la izquierda.
+ * Todo sale de una semilla, así que el dibujo es el mismo en cada visita.
+ * Las piezas se dibujan primero enteras y una animación CSS las lleva a su
+ * posición final (separadas, giradas, más pequeñas). Si el sistema pide
+ * reducir el movimiento, aparecen directamente en la posición final.
  */
-
-const RAMPA = 8
-const tono = (i) => `var(--faceta-${Math.min(RAMPA, Math.max(1, i))})`
 
 function crearAleatorio(semilla) {
   let a = semilla >>> 0
@@ -24,157 +21,257 @@ function crearAleatorio(semilla) {
   }
 }
 
-const LUZ = (() => {
-  const v = [-0.55, -0.65, 0.55]
-  const largo = Math.hypot(...v)
-  return v.map((c) => c / largo)
-})()
+const aTexto = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+const centro = (pts) => [
+  pts.reduce((s, p) => s + p[0], 0) / pts.length,
+  pts.reduce((s, p) => s + p[1], 0) / pts.length,
+]
+const mezclar = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]
+const distancia = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1])
 
-/** Tono de una cara según su orientación: 1 (sombra) a 8 (brillo). */
-function sombrear([a, b, c]) {
-  const u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
-  const v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
-  let n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
-  const largo = Math.hypot(...n) || 1
-  n = n.map((x) => x / largo)
-  if (n[2] < 0) n = n.map((x) => -x)
-  const luz = n[0] * LUZ[0] + n[1] * LUZ[1] + n[2] * LUZ[2]
-  return Math.round(1 + Math.max(0, Math.min(1, (luz - 0.2) / 0.8)) * 6.4)
+/** Tonos de las piezas: los tres azules de la paleta, con algunos negros y pocos brillos. */
+function elegirTono(r) {
+  const x = r()
+  if (x < 0.26) return 'var(--faceta-1)'
+  if (x < 0.5) return 'var(--faceta-2)'
+  if (x < 0.7) return 'var(--faceta-3)'
+  if (x < 0.86) return 'var(--card)'
+  if (x < 0.95) return 'var(--faceta-4)'
+  return 'var(--faceta-5)'
 }
 
-const centroide = (pts) => [
-  (pts[0][0] + pts[1][0] + pts[2][0]) / 3,
-  (pts[0][1] + pts[1][1] + pts[2][1]) / 3,
-]
+/** Parte un triángulo por su lado más largo, varias veces. */
+function partir(tri, niveles, r) {
+  if (niveles <= 0) return [tri]
+  const lados = [0, 1, 2].map((i) => distancia(tri[i], tri[(i + 1) % 3]))
+  const i = lados.indexOf(Math.max(...lados))
+  const a = tri[i]
+  const b = tri[(i + 1) % 3]
+  const c = tri[(i + 2) % 3]
+  const m = mezclar(a, b, 0.3 + r() * 0.4)
+  return [...partir([a, m, c], niveles - 1, r), ...partir([m, b, c], niveles - 1, r)]
+}
 
-const aTexto = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
-
-function generarColumna(semilla, ancho, alto) {
-  const r = crearAleatorio(semilla)
-  const entre = (a, b) => a + r() * (b - a)
-  const cx = ancho / 2
-
-  // Filas de la columna: un borde izquierdo, una arista central y un borde derecho.
-  const filas = []
-  for (let y = -10, i = 0; y < alto + 10; y += entre(46, 84), i++) {
-    const media = ancho * entre(0.1, 0.2)
-    const desvio = Math.sin(i * 1.25 + semilla) * ancho * 0.07
-    const centro = cx + desvio
-    const altura = (i % 2 === 0 ? 1 : 0.35) * entre(40, 75)
-    filas.push({
-      L: [centro - media - entre(0, 16), y + entre(-12, 12), 0],
-      C: [centro + entre(-14, 14), y, altura],
-      R: [centro + media + entre(0, 16), y + entre(-12, 12), 0],
-    })
-  }
-
-  const piezas = []
-  const agregar = (pts3d, extra = {}) => {
-    const pts = pts3d.map(([x, y]) => [x, y])
-    const [gx, gy] = centroide(pts)
-    const fuera = gx - cx
-    piezas.push({
-      puntos: aTexto(pts),
-      relleno: tono(extra.tono ?? sombrear(pts3d)),
-      dx: fuera * entre(0.8, 2.2) + entre(-50, 50),
-      dy: entre(-70, 70),
-      giro: entre(-140, 140),
-      retraso: (gy / alto) * 0.85 + entre(0, 0.2),
-    })
-  }
-
-  for (let i = 0; i < filas.length - 1; i++) {
-    const a = filas[i]
-    const b = filas[i + 1]
-    agregar([a.L, a.C, b.L])
-    agregar([a.C, b.C, b.L])
-    agregar([a.C, a.R, b.R])
-    agregar([a.C, b.R, b.C])
-
-    // Puntas que sobresalen de los bordes, como en una roca rota.
-    for (const lado of ['L', 'R']) {
-      if (r() > 0.42) continue
-      const signo = lado === 'L' ? -1 : 1
-      const base = lado === 'L' ? Math.min(a.L[0], b.L[0]) : Math.max(a.R[0], b.R[0])
-      const punta = [base + signo * entre(22, 70), (a[lado][1] + b[lado][1]) / 2 + entre(-22, 22), 0]
-      agregar([a[lado], b[lado], punta], { tono: lado === 'L' ? Math.round(entre(4, 7)) : Math.round(entre(2, 4)) })
-    }
-  }
-
-  // Fragmentos sueltos alrededor de la columna.
-  const sueltos = []
-  for (let intento = 0; sueltos.length < 26 && intento < 400; intento++) {
-    const x = entre(0, ancho)
-    const y = entre(0, alto)
-    const distancia = Math.abs(x - cx) / (ancho / 2)
-    if (distancia < 0.38) continue
-    const tamano = entre(7, 26) * (1.2 - distancia * 0.5)
-    const inicio = entre(0, Math.PI * 2)
-    const pts = [0, 1, 2].map((k) => {
-      const angulo = inicio + k * ((Math.PI * 2) / 3) + entre(-0.45, 0.45)
-      const radio = tamano * entre(0.65, 1.05)
-      return [x + Math.cos(angulo) * radio, y + Math.sin(angulo) * radio]
-    })
-    sueltos.push({
-      puntos: aTexto(pts),
-      relleno: tono(Math.round(entre(2, 7))),
-      opacidad: entre(0.35, 0.9),
-      dx: (x - cx) * entre(0.4, 0.9),
-      dy: entre(-60, 60),
-      giro: entre(-200, 200),
-      retraso: 0.5 + entre(0, 0.9),
-    })
-  }
-
-  return { piezas, sueltos }
+function transformar({ dx = 0, dy = 0, giro = 0, escala = 1 }) {
+  return `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) rotate(${giro.toFixed(1)}deg) scale(${escala.toFixed(3)})`
 }
 
 /**
- * Columna de fragmentos facetados. Con `armada` (por defecto) las piezas
- * vuelan a su lugar al montarse; sin ella se quedan dispersas.
+ * Una orilla que estalla en fragmentos. Se dibuja el lado izquierdo; el
+ * derecho es el mismo dibujo reflejado (con otra semilla).
  */
-export function Fragmentos({ semilla = 7, ancho = 360, alto = 560, armada = true, className }) {
-  const { piezas, sueltos } = useMemo(() => generarColumna(semilla, ancho, alto), [semilla, ancho, alto])
+function generarEstallido(semilla, ancho, alto) {
+  const r = crearAleatorio(semilla)
+  const entre = (a, b) => a + r() * (b - a)
 
-  const estilo = (p) =>
-    armada
-      ? { '--dx': `${p.dx}px`, '--dy': `${p.dy}px`, '--giro': `${p.giro}deg`, '--retraso': `${p.retraso}s` }
-      : { transform: `translate(${p.dx * 0.55}px, ${p.dy * 0.8}px) rotate(${p.giro * 0.6}deg)` }
+  // Franja inicial pegada a la orilla, en filas: orilla, medio y frente.
+  const filas = []
+  for (let y = -40; y < alto + 40; y += entre(70, 130)) {
+    filas.push({
+      O: [-20, y + entre(-15, 15)],
+      M: [entre(40, 95), y + entre(-25, 25)],
+      F: [entre(120, 215), y + entre(-30, 30)],
+    })
+  }
+  const grandes = []
+  for (let i = 0; i < filas.length - 1; i++) {
+    const a = filas[i]
+    const b = filas[i + 1]
+    grandes.push([a.O, a.M, b.O], [a.M, b.M, b.O], [a.M, a.F, b.M], [a.F, b.F, b.M])
+    // Una punta que se adelanta hacia el centro.
+    if (r() < 0.55) {
+      const punta = [Math.max(a.F[0], b.F[0]) + entre(30, 110), (a.F[1] + b.F[1]) / 2 + entre(-30, 30)]
+      grandes.push([a.F, punta, b.F])
+    }
+  }
 
+  const piezas = []
+  for (const tri of grandes) {
+    const [gx] = centro(tri)
+    const niveles = gx < 45 ? 1 : gx < 110 ? 2 + Math.round(r()) : 3 + Math.round(r() * 1.4)
+    for (const pieza of partir(tri, niveles, r)) {
+      const [px, py] = centro(pieza)
+      // d: 0 en la orilla, 1 en el frente de la franja. Más lejos, más suelta.
+      const d = Math.max(0, px / 190)
+      const suelta = Math.max(0, d - 0.32)
+      const final = {
+        dx: suelta ** 1.5 * entre(40, 230),
+        dy: (py - alto / 2) * suelta * entre(0, 0.12) + entre(-1, 1) * suelta * 30,
+        giro: entre(-1, 1) * suelta * 95,
+        escala: 1 - Math.min(0.6, suelta * entre(0.2, 0.7)),
+      }
+      piezas.push({
+        puntos: aTexto(pieza),
+        relleno: elegirTono(r),
+        final: transformar(final),
+        retraso: 0.15 + d * 0.35 + entre(0, 0.15),
+      })
+    }
+  }
+
+  // Esquirlas: más densas cerca de la orilla, cada vez más escasas hacia el centro.
+  const esquirlas = []
+  for (let i = 0; i < 80; i++) {
+    const x = 60 + r() ** 1.6 * (ancho - 50)
+    const y = entre(0, alto)
+    const lejos = x / ancho
+    const tamano = entre(2.5, 13) * (1.15 - lejos * 0.7)
+    const inicio = entre(0, Math.PI * 2)
+    const pts = [0, 1, 2].map((k) => {
+      const angulo = inicio + k * ((Math.PI * 2) / 3) + entre(-0.5, 0.5)
+      const radio = tamano * entre(0.55, 1.1)
+      return [x + Math.cos(angulo) * radio, y + Math.sin(angulo) * radio]
+    })
+    esquirlas.push({
+      puntos: aTexto(pts),
+      relleno: elegirTono(r),
+      opacidad: entre(0.55, 1) * (1.1 - lejos * 0.5),
+      inicio: transformar({ dx: -(x - entre(60, 140)), dy: entre(-20, 20), giro: entre(-90, 90), escala: 0.4 }),
+      final: transformar({ giro: entre(-40, 40) }),
+      retraso: 0.3 + lejos * 0.45 + entre(0, 0.2),
+    })
+  }
+  return { piezas, esquirlas }
+}
+
+export function Estallido({ semilla = 1, lado = 'izquierdo', ancho = 440, alto = 640, className }) {
+  const { piezas, esquirlas } = useMemo(() => generarEstallido(semilla, ancho, alto), [semilla, ancho, alto])
   return (
     <svg
       viewBox={`0 0 ${ancho} ${alto}`}
-      className={cn('h-full w-full overflow-visible', className)}
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="xMinYMid slice"
+      className={cn('h-full overflow-visible', lado === 'derecho' && '-scale-x-100', className)}
       aria-hidden="true"
       focusable="false"
     >
-      <g className={armada ? undefined : 'opacity-60'}>
-        {sueltos.map((p, i) => (
+      {esquirlas.map((e, i) => (
+        <polygon
+          key={`e${i}`}
+          points={e.puntos}
+          fill={e.relleno}
+          fillOpacity={e.opacidad}
+          className="esquirla"
+          style={{ '--inicio': e.inicio, '--final': e.final, '--retraso': `${e.retraso}s` }}
+        />
+      ))}
+      {piezas.map((p, i) => (
+        <polygon
+          key={`p${i}`}
+          points={p.puntos}
+          fill={p.relleno}
+          stroke="var(--background)"
+          strokeWidth="2"
+          strokeLinejoin="round"
+          className="pieza"
+          style={{ '--final': p.final, '--retraso': `${p.retraso}s` }}
+        />
+      ))}
+    </svg>
+  )
+}
+
+/*
+ * Triángulo partido por grietas (el logotipo). En un lienzo de 100 × 100:
+ * vértices A (arriba), B (abajo a la izquierda) y C (abajo a la derecha),
+ * y tres grietas que lo dividen en cuatro piezas.
+ */
+const A = [50, 5]
+const B = [4, 91]
+const C = [96, 91]
+const P1 = mezclar(A, B, 0.5)
+const Q1 = mezclar(A, C, 0.33)
+const R = mezclar(P1, Q1, 0.42)
+const Q2 = mezclar(A, C, 0.84)
+const P3 = mezclar(A, B, 0.9)
+const Q3 = mezclar(R, Q2, 0.86)
+
+const PIEZAS_LOGO = [
+  { puntos: [A, Q1, P1], tono: 'var(--faceta-6)' },
+  { puntos: [Q1, Q2, R], tono: 'var(--faceta-4)' },
+  { puntos: [P1, R, Q3, P3], tono: 'var(--faceta-5)' },
+  { puntos: [P3, Q3, Q2, C, B], tono: 'var(--faceta-3)' },
+]
+const CENTRO_LOGO = centro([A, B, C])
+
+/**
+ * Triángulo partido. Con `separacion` 0 es el logotipo; con más, las piezas
+ * se apartan del centro y sueltan esquirlas por las grietas.
+ */
+export function TrianguloRoto({ separacion = 0, esquirlas = 0, semilla = 5, fondo = 'var(--background)', className }) {
+  const dibujo = useMemo(() => {
+    const r = crearAleatorio(semilla)
+    const entre = (a, b) => a + r() * (b - a)
+    const piezas = PIEZAS_LOGO.map((p) => {
+      const [cx, cy] = centro(p.puntos)
+      return {
+        puntos: aTexto(p.puntos),
+        tono: p.tono,
+        final: transformar({
+          dx: (cx - CENTRO_LOGO[0]) * separacion,
+          dy: (cy - CENTRO_LOGO[1]) * separacion,
+          giro: separacion * entre(-14, 14),
+        }),
+        retraso: 0.1 + entre(0, 0.15),
+      }
+    })
+    // Esquirlas que salen de las grietas.
+    const grietas = [
+      [P1, Q1],
+      [R, Q2],
+      [P3, Q3],
+    ]
+    const sueltas = []
+    for (let i = 0; i < esquirlas; i++) {
+      const [a, b] = grietas[i % grietas.length]
+      const [x, y] = mezclar(a, b, entre(0.1, 0.9))
+      const angulo = Math.atan2(y - CENTRO_LOGO[1], x - CENTRO_LOGO[0]) + entre(-0.8, 0.8)
+      const viaje = separacion * entre(8, 40)
+      const t = entre(0.8, 2.6)
+      const inicio = entre(0, Math.PI * 2)
+      const pts = [0, 1, 2].map((k) => {
+        const ang = inicio + k * ((Math.PI * 2) / 3) + entre(-0.4, 0.4)
+        return [x + Math.cos(ang) * t, y + Math.sin(ang) * t]
+      })
+      sueltas.push({
+        puntos: aTexto(pts),
+        tono: ['var(--faceta-3)', 'var(--faceta-4)', 'var(--faceta-5)', 'var(--faceta-6)'][Math.floor(r() * 4)],
+        inicio: transformar({ escala: 0.2 }),
+        final: transformar({ dx: Math.cos(angulo) * viaje, dy: Math.sin(angulo) * viaje, giro: entre(-120, 120) }),
+        retraso: 0.2 + entre(0, 0.3),
+      })
+    }
+    return { piezas, sueltas }
+  }, [separacion, esquirlas, semilla])
+
+  const animado = separacion > 0
+  return (
+    <svg viewBox="0 0 100 100" className={cn('overflow-visible', className)} aria-hidden="true" focusable="false">
+      {dibujo.sueltas.map((e, i) => (
+        <polygon
+          key={`e${i}`}
+          points={e.puntos}
+          fill={e.tono}
+          className="esquirla"
+          style={{ '--inicio': e.inicio, '--final': e.final, '--retraso': `${e.retraso}s` }}
+        />
+      ))}
+      <g stroke={fondo} strokeWidth={animado ? 1.4 : 4.5} strokeLinejoin="miter">
+        {dibujo.piezas.map((p, i) => (
           <polygon
-            key={`s${i}`}
+            key={i}
             points={p.puntos}
-            fill={p.relleno}
-            fillOpacity={p.opacidad}
-            className={armada ? 'fragmento' : 'fragmento-quieto'}
-            style={estilo(p)}
-          />
-        ))}
-        {piezas.map((p, i) => (
-          <polygon
-            key={`p${i}`}
-            points={p.puntos}
-            fill={p.relleno}
-            stroke="var(--background)"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-            className={armada ? 'fragmento' : 'fragmento-quieto'}
-            style={estilo(p)}
+            fill={p.tono}
+            className={animado ? 'pieza' : undefined}
+            style={animado ? { '--final': p.final, '--retraso': `${p.retraso}s` } : undefined}
           />
         ))}
       </g>
     </svg>
   )
+}
+
+export function Logotipo({ className }) {
+  return <TrianguloRoto fondo="var(--sidebar)" className={cn('size-7', className)} />
 }
 
 /** Separador horizontal: una grieta que suelta algunas esquirlas. */
@@ -200,7 +297,7 @@ export function Grieta({ semilla = 3, className }) {
           [cx + t * entre(0.3, 1), cy - arriba * t * entre(0.6, 1.2)],
           [cx + t, cy + entre(-2, 3)],
         ]),
-        relleno: tono(Math.round(entre(3, 7))),
+        relleno: `var(--faceta-${Math.round(entre(2, 5))})`,
       })
     }
     return { linea: aTexto(puntos), esquirlas }
@@ -218,20 +315,6 @@ export function Grieta({ semilla = 3, className }) {
       {esquirlas.map((e, i) => (
         <polygon key={i} points={e.puntos} fill={e.relleno} />
       ))}
-    </svg>
-  )
-}
-
-/** Logotipo: un triángulo partido en cuatro caras. */
-export function Logotipo({ className }) {
-  return (
-    <svg viewBox="0 0 28 28" className={cn('size-7', className)} aria-hidden="true" focusable="false">
-      <g stroke="var(--sidebar)" strokeWidth="1.4" strokeLinejoin="round">
-        <polygon points="14,2.5 8,13.5 20,13.5" fill="var(--faceta-7)" />
-        <polygon points="2,25 8,13.5 14,25" fill="var(--faceta-5)" />
-        <polygon points="8,13.5 20,13.5 14,25" fill="var(--faceta-6)" />
-        <polygon points="14,25 20,13.5 26,25" fill="var(--faceta-3)" />
-      </g>
     </svg>
   )
 }

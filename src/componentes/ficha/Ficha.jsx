@@ -163,7 +163,7 @@ export function Ficha({ datos, ficha, algoritmos, conSesion }) {
 
       <Seccion id="cuando" titulo="Cuándo usarlo y cuándo no">
         <div className="grid max-w-4xl gap-8 md:grid-cols-2">
-          <Lista icono={Check} titulo="Conviene cuando" elementos={ficha.usarlo} tono="text-primary" />
+          <Lista icono={Check} titulo="Conviene cuando" elementos={ficha.usarlo} tono="text-enlace" />
           <Lista icono={X} titulo="Mejor evitarlo cuando" elementos={ficha.evitarlo} tono="text-estado-pivote" />
         </div>
       </Seccion>
@@ -193,7 +193,7 @@ export function Ficha({ datos, ficha, algoritmos, conSesion }) {
               <li key={relacion.id} className="px-4 py-3.5">
                 <Link
                   to={rutaDe(otro.id)}
-                  className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
+                  className="inline-flex items-center gap-1.5 font-medium text-enlace underline-offset-4 hover:underline"
                 >
                   {otro.nombre}
                   {!conSesion && !otro.publico && <Lock className="size-3.5 text-tenue" aria-label="Requiere cuenta" />}

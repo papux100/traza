@@ -60,7 +60,7 @@ function Bloqueado() {
   const { pathname } = useLocation()
   return (
     <div className="max-w-md">
-      <Lock className="size-5 text-primary" aria-hidden="true" />
+      <Lock className="size-5 text-enlace" aria-hidden="true" />
       <p className="mt-2 font-medium">Este algoritmo es para usuarios registrados</p>
       <p className="mt-1 text-sm text-foreground/85">Crea una cuenta gratis para ejecutarlo paso a paso.</p>
       <Link to="/registro" state={{ desde: pathname }} className={cn(buttonVariants({ size: 'sm' }), 'mt-3')}>
