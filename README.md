@@ -10,26 +10,21 @@ Proyecto de la materia Aplicaciones Web (UABC, FIAD).
 
 ## Cómo ejecutarlo
 
-Requiere Node 20.19 o superior, pnpm y un proyecto de Supabase configurado (ver la sección siguiente). Se usan dos terminales.
+Requiere Node 20.19 o superior, pnpm y un proyecto de Supabase configurado (ver la sección siguiente).
 
-**Terminal 1, la API:**
-
-```bash
-cd servidor
-npm install
-npm run dev     # API en http://localhost:3000
-npm test        # pruebas de la API
-```
-
-**Terminal 2, el frontend:**
+El repositorio es un workspace de pnpm con dos paquetes, el sitio (la raíz) y la API (`servidor/`), y un solo `pnpm-lock.yaml`. Todo se ejecuta desde la raíz:
 
 ```bash
-pnpm install
-pnpm dev        # sitio en http://localhost:5173; las peticiones a /api van a la terminal 1
-pnpm test       # pruebas del reproductor, la entrada y los formularios
-pnpm build      # versión de producción en la carpeta dist
+pnpm install    # instala el sitio y la API
+pnpm dev        # levanta los dos: sitio en http://localhost:5173, API en http://localhost:3000
+pnpm test       # pruebas del sitio y de la API
+pnpm build      # versión de producción del sitio en la carpeta dist
 pnpm preview    # sirve la carpeta dist para revisarla
 ```
+
+Antes de la primera vez, copia `.env.example` como `.env.local` (sitio) y `servidor/.env.example` como `servidor/.env` (API) y llena los valores.
+
+`pnpm dev` muestra la salida de los dos con el prefijo `dev:web` o `dev:api`. Para levantar sólo uno: `pnpm dev:web` o `pnpm dev:api`. Lo mismo con las pruebas: `pnpm test:web` y `pnpm test:api`.
 
 ## Arquitectura
 
@@ -74,6 +69,7 @@ Sin `entrada`, usa los datos de ejemplo del algoritmo. En las búsquedas se mand
 | Archivo | Qué hace |
 |---|---|
 | `src/index.js` | Punto de entrada: lee la configuración, crea la conexión y enciende el servidor |
+| `src/entorno.js` | Carga `servidor/.env` si existe (en Render no hay archivo: las variables vienen del panel) |
 | `src/config.js` | Lee las variables de entorno |
 | `src/db.js` | **Conexión a PostgreSQL** con la cadena `DATABASE_URL` (pool de conexiones) |
 | `src/consultas.js` | Todas las consultas SQL, con parámetros para evitar inyección |
@@ -197,7 +193,7 @@ supabase/
 3. **Agrega su fila** en la tabla `algoritmos` de Supabase, con el mismo `id` que usaste en el módulo.
 4. **Escribe su ficha** como una fila de la tabla `fichas`. Los textos admiten párrafos separados por una línea en blanco, listas (`1.` o `-`), `` `código` ``, `**negritas**` y enlaces `[texto](/algoritmos/id)`.
 
-El reproductor y el visualizador no se tocan. Al ejecutar `npm test` dentro de `servidor`, el algoritmo nuevo queda cubierto automáticamente por las pruebas.
+El reproductor y el visualizador no se tocan. Al ejecutar `pnpm test:api`, el algoritmo nuevo queda cubierto automáticamente por las pruebas.
 
 ### Zonas auxiliares
 
@@ -218,7 +214,7 @@ Mientras un elemento está en la zona extra, su posición en el arreglo queda en
 
 ## Qué verifican las pruebas
 
-**En la API** (`cd servidor && npm test`), para cada uno de los 19 algoritmos, con 46 entradas (casos límite más arreglos aleatorios con semilla fija):
+**En la API** (`pnpm test:api`), para cada uno de los 19 algoritmos, con 46 entradas (casos límite más arreglos aleatorios con semilla fija):
 
 - El resultado queda ordenado y conserva los elementos originales.
 - La entrada no se modifica y el primer paso la muestra intacta.
@@ -231,7 +227,7 @@ Para las búsquedas se comprueba además que encuentran los valores presentes y 
 
 También se prueba cada ruta: fichas y ejecuciones públicas y privadas, con y sin sesión, tokens falsos, entradas inválidas, ids inválidos, CORS, compresión, el límite de peticiones y que un error de la base de datos no revele detalles. Si se define `DATABASE_URL_PRUEBA` con una base de datos que tenga los scripts de `supabase/`, también se prueban las consultas reales.
 
-**En el frontend** (`pnpm test`) se prueban el reproductor con un servidor simulado (carga, bloqueo, errores y respuestas que llegan en desorden), la validación de la entrada, el lector de Markdown (incluido que no acepte enlaces peligrosos ni HTML) y la validación de los formularios de cuenta.
+**En el frontend** (`pnpm test:web`) se prueban el reproductor con un servidor simulado (carga, bloqueo, errores y respuestas que llegan en desorden), la validación de la entrada, el lector de Markdown (incluido que no acepte enlaces peligrosos ni HTML) y la validación de los formularios de cuenta.
 
 ## Publicación
 
@@ -241,14 +237,14 @@ Se publican dos cosas: la API en Render y el frontend en Vercel. La base de dato
 
 1. Sube el repositorio a GitHub.
 2. En [render.com](https://render.com), crea un **Web Service** a partir del repositorio con:
-   - **Root Directory:** `servidor`
-   - **Build Command:** `npm ci`
-   - **Start Command:** `npm start`
+   - **Root Directory:** vacío (la raíz del repositorio, porque ahí está `pnpm-lock.yaml`)
+   - **Build Command:** `npm install -g pnpm@10 && pnpm install --frozen-lockfile`
+   - **Start Command:** `pnpm --filter traza-servidor start`
    - **Instance Type:** Free
 3. En **Environment**, agrega `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` y `ORIGENES_PERMITIDOS` (por ahora, `http://localhost:5173`).
 4. Cuando termine, abre `https://tu-api.onrender.com/api/salud`. Debe responder `{"estado":"ok","baseDeDatos":"ok"}`.
 
-También se puede crear con **New, Blueprint**, que lee la configuración de `render.yaml`.
+También se puede crear con **New, Blueprint**, que lee la configuración de `render.yaml`. Esa configuración incluye un filtro para que la API sólo se vuelva a publicar cuando cambia algo dentro de `servidor/` o el lockfile.
 
 En el plan gratuito, el servicio se duerme tras unos minutos sin uso y la primera petición tarda alrededor de un minuto en despertarlo. Antes de una presentación, abre `/api/salud` para despertarlo.
 

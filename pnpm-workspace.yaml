@@ -1,0 +1,4 @@
+# Un solo repositorio con dos paquetes: el sitio (la raíz) y la API (servidor/).
+# Con esto, `pnpm install` en la raíz instala ambos y genera un solo pnpm-lock.yaml.
+packages:
+  - servidor

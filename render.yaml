@@ -1,14 +1,23 @@
 # Configuración para publicar la API de Fastify en Render (Blueprint).
 # Los valores secretos se escriben en el panel de Render, no aquí.
+#
+# El proyecto es un workspace de pnpm con un solo pnpm-lock.yaml en la raíz,
+# así que el servicio se construye desde la raíz (sin rootDir: Render no deja
+# leer archivos fuera de rootDir) y sólo arranca el paquete del servidor.
 services:
   - type: web
     name: traza-api
     runtime: node
     plan: free
-    rootDir: servidor
-    buildCommand: npm ci
-    startCommand: npm start
+    buildCommand: npm install -g pnpm@10 && pnpm install --frozen-lockfile
+    startCommand: pnpm --filter traza-servidor start
     healthCheckPath: /api/salud
+    # Sólo vuelve a publicar la API cuando cambia algo que la afecta.
+    buildFilter:
+      paths:
+        - servidor/**
+        - pnpm-lock.yaml
+        - pnpm-workspace.yaml
     envVars:
       - key: NODE_VERSION
         value: "22"

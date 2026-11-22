@@ -4,11 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm run \"/^dev:/\"",
+    "dev:web": "vite",
+    "dev:api": "pnpm --filter traza-servidor dev",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run && pnpm --filter traza-servidor test",
+    "test:web": "vitest run",
+    "test:api": "pnpm --filter traza-servidor test"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",

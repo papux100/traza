@@ -3,8 +3,10 @@ import { crearVerificador } from './auth.js'
 import { leerConfiguracion } from './config.js'
 import { crearConsultas } from './consultas.js'
 import { crearPool } from './db.js'
+import { cargarArchivoEnv } from './entorno.js'
 
 /** Punto de entrada: lee la configuración, conecta todo y enciende el servidor. */
+cargarArchivoEnv()
 const config = leerConfiguracion()
 const pool = crearPool(config)
 
