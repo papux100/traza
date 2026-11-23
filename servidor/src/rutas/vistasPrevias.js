@@ -6,7 +6,7 @@ export const MAX_CUADROS = 60
 /**
  * Reduce la traza de un algoritmo a lo que se ve en una miniatura: la altura
  * de cada barra y su estado, paso por paso. Sin código, sin descripciones y
- * sin la zona auxiliar, así que también puede mostrarse a quien no tiene cuenta.
+ * sin la zona auxiliar.
  */
 export function vistaPrevia(algoritmo) {
   const { pasos } = algoritmo.ejecutar(algoritmo.entradaPorDefecto, algoritmo.objetivoPorDefecto)
@@ -54,10 +54,21 @@ const respuesta200 = {
   },
 }
 
-/** Miniaturas animadas del catálogo: una por algoritmo, en una sola petición. */
+/**
+ * Miniaturas animadas del catálogo, en una sola petición. Siguen la misma regla
+ * que las fichas: sin sesión sólo llegan las de los algoritmos públicos.
+ */
 export default async function rutasVistasPrevias(app) {
-  app.get('/api/vistas-previas', { schema: { response: { 200: respuesta200 } } }, async (_peticion, respuesta) => {
-    respuesta.header('cache-control', 'public, max-age=3600')
-    return { vistas: todasLasVistas() }
+  app.get('/api/vistas-previas', { schema: { response: { 200: respuesta200 } } }, async (peticion, respuesta) => {
+    const [catalogo, usuario] = await Promise.all([app.consultas.listarAlgoritmos(), peticion.obtenerUsuario()])
+    const todas = todasLasVistas()
+    const vistas = {}
+    for (const algoritmo of catalogo) {
+      if (todas[algoritmo.id] && (algoritmo.publico || usuario)) vistas[algoritmo.id] = todas[algoritmo.id]
+    }
+    // La respuesta depende de la sesión: sólo la guarda el navegador de cada quien.
+    respuesta.header('cache-control', 'private, max-age=600')
+    respuesta.header('vary', 'Authorization')
+    return { vistas }
   })
 }

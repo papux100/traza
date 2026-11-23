@@ -1,6 +1,7 @@
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { crearApp } from '../src/app.js'
+import { todasLasVistas } from '../src/rutas/vistasPrevias.js'
 
 /** Datos y dependencias falsos: así se prueban las rutas sin base de datos real. */
 const ALGORITMOS = [
@@ -244,11 +245,27 @@ describe('GET /api/perfil', () => {
 })
 
 describe('GET /api/vistas-previas', () => {
-  it('devuelve una miniatura de cada algoritmo sin pedir cuenta', async () => {
+  it('sin sesión sólo entrega las miniaturas de los algoritmos públicos', async () => {
     const r = await pedir('/api/vistas-previas')
     assert.equal(r.statusCode, 200)
-    assert.match(r.headers['cache-control'], /max-age=3600/)
-    const { vistas } = r.json()
+    assert.deepEqual(Object.keys(r.json().vistas).sort(), ['busqueda-binaria', 'insercion'])
+    assert.match(r.headers['cache-control'], /private/)
+    assert.match(r.headers.vary, /Authorization/)
+  })
+
+  it('con un token falso se trata como sin sesión', async () => {
+    const { vistas } = (await pedir('/api/vistas-previas', 'token-falso')).json()
+    assert.deepEqual(Object.keys(vistas).sort(), ['busqueda-binaria', 'insercion'])
+  })
+
+  it('con sesión entrega todas las del catálogo', async () => {
+    const { vistas } = (await pedir('/api/vistas-previas', 'token-valido')).json()
+    // 'vacio' está en el catálogo falso pero no es un algoritmo real, así que no tiene miniatura.
+    assert.deepEqual(Object.keys(vistas).sort(), ['busqueda-binaria', 'conteo', 'insercion', 'quicksort'])
+  })
+
+  it('cada uno de los 19 algoritmos tiene una miniatura bien formada', () => {
+    const vistas = todasLasVistas()
     assert.equal(Object.keys(vistas).length, 19)
     for (const [id, vista] of Object.entries(vistas)) {
       assert.ok(vista.cuadros.length >= 2, id)
@@ -258,16 +275,15 @@ describe('GET /api/vistas-previas', () => {
   })
 
   it('sólo lleva alturas y estados: nada del código ni de los textos', async () => {
-    const { vistas } = (await pedir('/api/vistas-previas')).json()
+    const { vistas } = (await pedir('/api/vistas-previas', 'token-valido')).json()
     for (const vista of Object.values(vistas)) {
       assert.deepEqual(Object.keys(vista).sort(), ['cuadros', 'familia'])
       for (const cuadro of vista.cuadros) assert.deepEqual(Object.keys(cuadro).sort(), ['e', 'v'])
     }
   })
 
-  it('el último cuadro de un ordenamiento queda ordenado', async () => {
-    const { vistas } = (await pedir('/api/vistas-previas')).json()
-    for (const [id, vista] of Object.entries(vistas)) {
+  it('el último cuadro de un ordenamiento queda ordenado', () => {
+    for (const [id, vista] of Object.entries(todasLasVistas())) {
       if (vista.familia !== 'ordenamiento') continue
       const ultimo = vista.cuadros.at(-1).v
       assert.deepEqual(ultimo, [...ultimo].sort((a, b) => a - b), id)

@@ -259,7 +259,7 @@ La API valida cada petición con esquemas JSON, limita las peticiones por IP y s
 - **Estado:** Aceptada
 
 **Decisión.**
-- **API (`node:test`, 106 pruebas):**
+- **API (`node:test`, 109 pruebas):**
   - Cada algoritmo se prueba con 46 entradas, entre casos límite y arreglos aleatorios con semilla fija. Se comprueba que ordena, que conserva los elementos, que no modifica la entrada, que la traza está bien formada y que el código mostrado coincide con la traza.
   - Se prueban todas las rutas, incluidos los accesos sin cuenta, los datos inválidos, CORS y el límite de peticiones.
 - **Sitio (Vitest, 23 pruebas):** el reproductor con un servidor simulado, la lectura de la entrada, el lector de Markdown y los formularios.
@@ -350,15 +350,16 @@ La API valida cada petición con esquemas JSON, limita las peticiones por IP y s
 
 **Contexto.** En el catálogo, al pasar el cursor por un algoritmo debía verse una animación de cómo trabaja. Los algoritmos se ejecutan en el servidor (decisión 9), y los privados sólo se ejecutan con sesión.
 
-**Decisión.** Una ruta pública, `GET /api/vistas-previas`, devuelve en una sola respuesta una miniatura de los 19 algoritmos. Cada miniatura es la traza de los datos de ejemplo reducida a la altura y el estado de cada barra, con 60 cuadros como máximo. El servidor la calcula una vez y el navegador la guarda en caché una hora. En el sitio, la fila del catálogo la anima mientras tiene el cursor encima o el foco del teclado, en el lugar donde normalmente muestra la complejidad.
+**Decisión.** La ruta `GET /api/vistas-previas` devuelve en una sola respuesta las miniaturas del catálogo. Cada miniatura es la traza de los datos de ejemplo reducida a la altura y el estado de cada barra, con 60 cuadros como máximo; el servidor las calcula una vez. Sigue la misma regla que las fichas: sin sesión sólo entrega las de los algoritmos públicos, y con sesión, todas. En el sitio, la fila del catálogo anima su miniatura mientras tiene el cursor encima o el foco del teclado, en el lugar donde normalmente muestra la complejidad. Las filas bloqueadas siguen mostrando "Requiere cuenta".
 
 **Alternativas.**
-- Pedir la traza completa a `POST /api/algoritmos/:id/ejecucion` en cada hover. Con los algoritmos privados, quien no tiene cuenta no vería nada, y cada hover sería una petición.
+- Pedir la traza completa a `POST /api/algoritmos/:id/ejecucion` en cada hover: una petición por fila.
+- Mostrar las miniaturas de todos los algoritmos a cualquiera, como adelanto. Fue la primera versión, pero se descartó: dejaba ver sin cuenta cómo trabajan los algoritmos bloqueados.
 - Volver a mandar los algoritmos al navegador, lo que deshace la decisión 9.
 
-**Motivo.** La miniatura no lleva código, descripciones ni datos del usuario, sólo barras de colores con los datos de ejemplo. Por eso puede ser pública: muestra a quien no tiene cuenta qué hace cada algoritmo y qué gana al registrarse, sin entregar el contenido de las fichas privadas. Una prueba verifica que la respuesta sólo trae esos campos.
+**Motivo.** Una sola petición para todo el catálogo, con las mismas reglas de acceso que el resto del contenido. Las pruebas verifican qué miniaturas recibe cada quien y que la respuesta sólo trae alturas y estados.
 
-**Consecuencias.** Las miniaturas se piden un momento después de cargar el inicio, en una sola petición de unos 74 KB sin comprimir. Si el usuario pidió reducir el movimiento, se muestra el resultado final sin animar. En pantallas táctiles no hay hover, así que no se muestran.
+**Consecuencias.** Las miniaturas se piden un momento después de cargar el inicio, en una sola petición de hasta unos 74 KB sin comprimir. Como la respuesta depende de la sesión, se guarda en caché sólo en el navegador de cada usuario (`private`, con `Vary: Authorization`), y al iniciar o cerrar sesión se piden de nuevo. Si el usuario pidió reducir el movimiento, se muestra el resultado final sin animar. En pantallas táctiles no hay hover, así que no se muestran.
 
 ---
 

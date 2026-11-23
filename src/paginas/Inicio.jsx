@@ -13,8 +13,10 @@ import { useSesion } from '@/stores/sesion'
 
 function Fila({ algoritmo, bloqueado }) {
   const idDescripcion = useId()
-  // Con el cursor encima o el foco del teclado, la fila muestra la animación del algoritmo.
-  const [activa, setActiva] = useState(false)
+  // Con el cursor encima o el foco del teclado, la fila muestra la animación del
+  // algoritmo. Las filas bloqueadas no la muestran: siguen diciendo "Requiere cuenta".
+  const [encima, setActiva] = useState(false)
+  const activa = encima && !bloqueado
   const encender = () => setActiva(true)
   const apagar = () => setActiva(false)
   // Toda la fila lleva a la ficha, pero el nombre accesible es sólo el del
@@ -63,10 +65,11 @@ export default function Inicio() {
   const privados = algoritmos.filter((a) => !a.publico).length
 
   // Las miniaturas del catálogo se piden un momento después de cargar, para que el primer hover ya tenga qué mostrar.
+  const usuarioId = useSesion((s) => s.usuario?.id ?? null)
   useEffect(() => {
-    const espera = setTimeout(cargarVistasPrevias, 1500)
+    const espera = setTimeout(() => cargarVistasPrevias(usuarioId), 1500)
     return () => clearTimeout(espera)
-  }, [])
+  }, [usuarioId])
 
   return (
     <>
