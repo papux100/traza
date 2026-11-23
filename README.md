@@ -52,6 +52,7 @@ Supabase Auth: registro, inicio de sesión y tokens (el navegador y la API lo co
 | `GET /api/fichas/:id` | Público si el algoritmo es público; si no, requiere sesión | La ficha, o `401` con el código `requiere_cuenta` |
 | `POST /api/algoritmos/:id/ejecucion` | Igual que la ficha: público o con sesión | Ejecuta el algoritmo con la entrada enviada y devuelve su código y su traza |
 | `GET /api/perfil` | Requiere sesión | Nombre y correo del usuario |
+| `GET /api/vistas-previas` | Público | Miniaturas animadas del catálogo: sólo la altura y el estado de cada barra, paso por paso |
 
 Ejemplo de ejecución:
 
@@ -156,7 +157,7 @@ Las dependencias van en un solo sentido. Un algoritmo no sabe que existe una pan
 
 ## Documentación
 
-- [Diario de decisiones](docs/DECISIONES.md): las 17 decisiones importantes del proyecto, con su contexto, las alternativas y el motivo de cada una.
+- [Diario de decisiones](docs/DECISIONES.md): las 19 decisiones importantes del proyecto, con su contexto, las alternativas y el motivo de cada una.
 - [Bitácora de IA](docs/BITACORA-IA.md): la conversación completa con Claude, prompt por prompt, desde la idea inicial hasta el rediseño.
 
 ## Estructura

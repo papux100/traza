@@ -243,6 +243,38 @@ describe('GET /api/perfil', () => {
   })
 })
 
+describe('GET /api/vistas-previas', () => {
+  it('devuelve una miniatura de cada algoritmo sin pedir cuenta', async () => {
+    const r = await pedir('/api/vistas-previas')
+    assert.equal(r.statusCode, 200)
+    assert.match(r.headers['cache-control'], /max-age=3600/)
+    const { vistas } = r.json()
+    assert.equal(Object.keys(vistas).length, 19)
+    for (const [id, vista] of Object.entries(vistas)) {
+      assert.ok(vista.cuadros.length >= 2, id)
+      assert.ok(vista.cuadros.length <= 61, id)
+      for (const cuadro of vista.cuadros) assert.equal(cuadro.v.length, cuadro.e.length, id)
+    }
+  })
+
+  it('sólo lleva alturas y estados: nada del código ni de los textos', async () => {
+    const { vistas } = (await pedir('/api/vistas-previas')).json()
+    for (const vista of Object.values(vistas)) {
+      assert.deepEqual(Object.keys(vista).sort(), ['cuadros', 'familia'])
+      for (const cuadro of vista.cuadros) assert.deepEqual(Object.keys(cuadro).sort(), ['e', 'v'])
+    }
+  })
+
+  it('el último cuadro de un ordenamiento queda ordenado', async () => {
+    const { vistas } = (await pedir('/api/vistas-previas')).json()
+    for (const [id, vista] of Object.entries(vistas)) {
+      if (vista.familia !== 'ordenamiento') continue
+      const ultimo = vista.cuadros.at(-1).v
+      assert.deepEqual(ultimo, [...ultimo].sort((a, b) => a - b), id)
+    }
+  })
+})
+
 describe('otros', () => {
   it('salud', async () => {
     assert.equal((await pedir('/api/salud')).json().estado, 'ok')

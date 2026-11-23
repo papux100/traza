@@ -1,8 +1,9 @@
-import { useId } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { Link } from 'react-router'
 import { Lock } from 'lucide-react'
 import { EstadoCarga } from '@/componentes/EstadoCarga'
 import { Estallido, Grieta } from '@/componentes/Fragmentos'
+import { VistaPrevia, cargarVistasPrevias } from '@/componentes/VistaPrevia'
 import { buttonVariants } from '@/componentes/ui/button'
 import { Visualizador } from '@/componentes/visualizador/Visualizador'
 import { BLOQUES, FAMILIAS, algoritmosDelBloque, rutaDe } from '@/datos/catalogo'
@@ -12,6 +13,10 @@ import { useSesion } from '@/stores/sesion'
 
 function Fila({ algoritmo, bloqueado }) {
   const idDescripcion = useId()
+  // Con el cursor encima o el foco del teclado, la fila muestra la animación del algoritmo.
+  const [activa, setActiva] = useState(false)
+  const encender = () => setActiva(true)
+  const apagar = () => setActiva(false)
   // Toda la fila lleva a la ficha, pero el nombre accesible es sólo el del
   // algoritmo; la descripción se lee aparte, como descripción del enlace.
   return (
@@ -20,22 +25,31 @@ function Fila({ algoritmo, bloqueado }) {
         to={rutaDe(algoritmo.id)}
         aria-label={bloqueado ? `${algoritmo.nombreCorto} (requiere cuenta)` : algoritmo.nombreCorto}
         aria-describedby={idDescripcion}
-        className="group grid gap-x-6 gap-y-2 px-4 py-3.5 transition-colors hover:bg-card sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-center"
+        onPointerEnter={encender}
+        onPointerLeave={apagar}
+        onFocus={encender}
+        onBlur={apagar}
+        className="group grid gap-x-6 gap-y-2 px-4 py-3.5 transition-colors hover:bg-card sm:grid-cols-[11rem_minmax(0,1fr)_7.5rem] sm:items-center"
       >
         <span className="boton-ficha justify-self-start">{algoritmo.nombreCorto}</span>
         <span id={idDescripcion} className="text-[0.9375rem] leading-relaxed text-foreground/85">
           {algoritmo.intencion}
         </span>
-        {bloqueado ? (
-          <span className="flex items-center gap-1 text-xs whitespace-nowrap text-tenue">
-            <Lock className="size-3.5" aria-hidden="true" />
-            Requiere cuenta
+        <span className="relative flex items-center sm:justify-end">
+          <span className={cn('transition-opacity duration-150', activa && 'sm:opacity-0')}>
+            {bloqueado ? (
+              <span className="flex items-center gap-1 text-xs whitespace-nowrap text-tenue">
+                <Lock className="size-3.5" aria-hidden="true" />
+                Requiere cuenta
+              </span>
+            ) : (
+              <span className="font-mono text-xs text-muted-foreground" title="Complejidad en el caso promedio">
+                {algoritmo.complejidad.promedio.startsWith('O') ? algoritmo.complejidad.promedio : 'Variable'}
+              </span>
+            )}
           </span>
-        ) : (
-          <span className="font-mono text-xs text-muted-foreground" title="Complejidad en el caso promedio">
-            {algoritmo.complejidad.promedio.startsWith('O') ? algoritmo.complejidad.promedio : 'Variable'}
-          </span>
-        )}
+          {activa && <VistaPrevia id={algoritmo.id} activa className="absolute inset-x-0 hidden sm:flex" />}
+        </span>
       </Link>
     </li>
   )
@@ -47,6 +61,12 @@ export default function Inicio() {
   const error = useCatalogo((s) => s.error)
   const conSesion = useSesion((s) => Boolean(s.usuario))
   const privados = algoritmos.filter((a) => !a.publico).length
+
+  // Las miniaturas del catálogo se piden un momento después de cargar, para que el primer hover ya tenga qué mostrar.
+  useEffect(() => {
+    const espera = setTimeout(cargarVistasPrevias, 1500)
+    return () => clearTimeout(espera)
+  }, [])
 
   return (
     <>

@@ -7,6 +7,7 @@ import rutasEjecucion from './rutas/ejecucion.js'
 import rutasFichas from './rutas/fichas.js'
 import rutasPerfil from './rutas/perfil.js'
 import rutasSalud from './rutas/salud.js'
+import rutasVistasPrevias from './rutas/vistasPrevias.js'
 
 /**
  * Arma la aplicación Fastify. Recibe sus dependencias (las consultas a la
@@ -87,6 +88,7 @@ export async function crearApp({ consultas, verificarToken, origenesPermitidos =
   await app.register(rutasEjecucion)
   await app.register(rutasFichas)
   await app.register(rutasPerfil)
+  await app.register(rutasVistasPrevias)
 
   return app
 }

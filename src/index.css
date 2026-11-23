@@ -172,6 +172,19 @@
   }
 }
 
+/*
+ * Sin barras de desplazamiento visibles en la página ni en el menú lateral.
+ * El desplazamiento sigue funcionando con la rueda, el touchpad y el teclado.
+ */
+html,
+.sin-barra {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar,
+.sin-barra::-webkit-scrollbar {
+  display: none;
+}
+
 @layer components {
   /*
    * Panel con la esquina superior derecha cortada en diagonal, como un

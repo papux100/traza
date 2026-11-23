@@ -27,6 +27,8 @@ Para agregar una decisión nueva, copia la plantilla del final, dale el siguient
 | 15 | Enlaces, botones y accesibilidad | 2026-11-22 | Aceptada |
 | 16 | Un reproductor independiente por visualizador | 2026-11-13 | Aceptada |
 | 17 | Dependencias con antigüedad mínima | 2026-11-13 | Aceptada |
+| 18 | Miniaturas animadas en el catálogo | 2026-11-22 | Aceptada |
+| 19 | Sin barras de desplazamiento visibles | 2026-11-22 | Aceptada |
 
 ---
 
@@ -165,6 +167,7 @@ La primera construcción se hizo con un núcleo de 9 y luego se completaron los 
 - `GET /api/fichas/:id`
 - `POST /api/algoritmos/:id/ejecucion`
 - `GET /api/perfil`
+- `GET /api/vistas-previas` (agregada después, ver la decisión 18)
 
 La API valida cada petición con esquemas JSON, limita las peticiones por IP y sólo acepta los orígenes configurados (CORS). Se conecta a PostgreSQL con `pg` y verifica los tokens con Supabase.
 
@@ -256,7 +259,7 @@ La API valida cada petición con esquemas JSON, limita las peticiones por IP y s
 - **Estado:** Aceptada
 
 **Decisión.**
-- **API (`node:test`, 103 pruebas):**
+- **API (`node:test`, 106 pruebas):**
   - Cada algoritmo se prueba con 46 entradas, entre casos límite y arreglos aleatorios con semilla fija. Se comprueba que ordena, que conserva los elementos, que no modifica la entrada, que la traza está bien formada y que el código mostrado coincide con la traza.
   - Se prueban todas las rutas, incluidos los accesos sin cuenta, los datos inválidos, CORS y el límite de peticiones.
 - **Sitio (Vitest, 23 pruebas):** el reproductor con un servidor simulado, la lectura de la entrada, el lector de Markdown y los formularios.
@@ -337,6 +340,40 @@ La API valida cada petición con esquemas JSON, limita las peticiones por IP y s
 **Motivo.** La protección evita instalar una versión comprometida en las primeras horas después de publicarse, que es cuando suelen detectarse. Es mejor adaptar el lockfile que quitar una medida de seguridad.
 
 **Consecuencias.** El proyecto no usa siempre la versión más nueva de cada paquete, sino una de hace unos días.
+
+---
+
+## 18. Miniaturas animadas en el catálogo
+
+- **Fecha:** 2026-11-22
+- **Estado:** Aceptada
+
+**Contexto.** En el catálogo, al pasar el cursor por un algoritmo debía verse una animación de cómo trabaja. Los algoritmos se ejecutan en el servidor (decisión 9), y los privados sólo se ejecutan con sesión.
+
+**Decisión.** Una ruta pública, `GET /api/vistas-previas`, devuelve en una sola respuesta una miniatura de los 19 algoritmos. Cada miniatura es la traza de los datos de ejemplo reducida a la altura y el estado de cada barra, con 60 cuadros como máximo. El servidor la calcula una vez y el navegador la guarda en caché una hora. En el sitio, la fila del catálogo la anima mientras tiene el cursor encima o el foco del teclado, en el lugar donde normalmente muestra la complejidad.
+
+**Alternativas.**
+- Pedir la traza completa a `POST /api/algoritmos/:id/ejecucion` en cada hover. Con los algoritmos privados, quien no tiene cuenta no vería nada, y cada hover sería una petición.
+- Volver a mandar los algoritmos al navegador, lo que deshace la decisión 9.
+
+**Motivo.** La miniatura no lleva código, descripciones ni datos del usuario, sólo barras de colores con los datos de ejemplo. Por eso puede ser pública: muestra a quien no tiene cuenta qué hace cada algoritmo y qué gana al registrarse, sin entregar el contenido de las fichas privadas. Una prueba verifica que la respuesta sólo trae esos campos.
+
+**Consecuencias.** Las miniaturas se piden un momento después de cargar el inicio, en una sola petición de unos 74 KB sin comprimir. Si el usuario pidió reducir el movimiento, se muestra el resultado final sin animar. En pantallas táctiles no hay hover, así que no se muestran.
+
+---
+
+## 19. Sin barras de desplazamiento visibles
+
+- **Fecha:** 2026-11-22
+- **Estado:** Aceptada
+
+**Decisión.** La página y el menú lateral ocultan su barra de desplazamiento (`scrollbar-width: none` y `::-webkit-scrollbar`). El desplazamiento sigue funcionando con la rueda, el touchpad, el teclado y el dedo.
+
+**Alternativas.** Barras delgadas con los colores del sitio.
+
+**Motivo.** Las barras claras del sistema rompían el diseño oscuro en los bordes de la pantalla.
+
+**Consecuencias.** No hay una pista visual de cuánto falta por bajar. En el menú lateral eso importa poco porque es corto, y en la página el contenido continúa claramente hacia abajo. Las zonas con desplazamiento horizontal, como el código y las tablas, conservan su barra.
 
 ---
 

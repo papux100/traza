@@ -174,7 +174,7 @@ export function Layout() {
         id="menu-lateral"
         onClick={alElegirEnlace}
         className={cn(
-          'fixed inset-y-0 left-0 z-20 w-64 overflow-y-auto border-r border-sidebar-border bg-sidebar px-3 pt-20 pb-8 lg:block lg:pt-6',
+          'sin-barra fixed inset-y-0 left-0 z-20 w-64 overflow-y-auto border-r border-sidebar-border bg-sidebar px-3 pt-20 pb-8 lg:block lg:pt-6',
           menuAbierto ? 'block w-full sm:w-72' : 'hidden',
         )}
       >

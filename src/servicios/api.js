@@ -140,6 +140,12 @@ export async function ejecutarAlgoritmo(id, { entrada, objetivo } = {}) {
   return pedir(`/api/algoritmos/${encodeURIComponent(id)}/ejecucion`, { metodo: 'POST', cuerpo })
 }
 
+/** Miniaturas animadas del catálogo: { [id]: { familia, cuadros: [{ v, e }] } }. */
+export async function obtenerVistasPrevias() {
+  const { vistas } = await pedir('/api/vistas-previas')
+  return vistas
+}
+
 export async function obtenerPerfil() {
   const { perfil } = await pedir('/api/perfil')
   return perfil
