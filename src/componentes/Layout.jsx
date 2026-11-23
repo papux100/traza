@@ -107,7 +107,10 @@ function Navegacion() {
                         <NavLink to={rutaDe(algoritmo.id)} className={(e) => cn(claseEnlace(e), 'flex items-center justify-between gap-2')}>
                           {algoritmo.nombreCorto}
                           {!conSesion && !algoritmo.publico && (
-                            <Lock className="size-3.5 shrink-0 text-tenue" aria-label="Requiere cuenta" />
+                            <>
+                              <Lock className="size-3.5 shrink-0 text-tenue" aria-hidden="true" />
+                              <span className="sr-only"> (requiere cuenta)</span>
+                            </>
                           )}
                         </NavLink>
                       </li>

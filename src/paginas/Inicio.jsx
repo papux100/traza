@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Link } from 'react-router'
 import { Lock } from 'lucide-react'
 import { EstadoCarga } from '@/componentes/EstadoCarga'
@@ -10,16 +11,21 @@ import { useCatalogo } from '@/stores/catalogo'
 import { useSesion } from '@/stores/sesion'
 
 function Fila({ algoritmo, bloqueado }) {
+  const idDescripcion = useId()
+  // Toda la fila lleva a la ficha, pero el nombre accesible es sólo el del
+  // algoritmo; la descripción se lee aparte, como descripción del enlace.
   return (
     <li>
       <Link
         to={rutaDe(algoritmo.id)}
-        className="group grid gap-x-6 gap-y-1 px-4 py-3.5 transition-colors hover:bg-card sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-baseline"
+        aria-label={bloqueado ? `${algoritmo.nombreCorto} (requiere cuenta)` : algoritmo.nombreCorto}
+        aria-describedby={idDescripcion}
+        className="group grid gap-x-6 gap-y-2 px-4 py-3.5 transition-colors hover:bg-card sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:items-center"
       >
-        <span className="font-medium text-enlace underline-offset-4 group-hover:underline">
-          {algoritmo.nombreCorto}
+        <span className="boton-ficha justify-self-start">{algoritmo.nombreCorto}</span>
+        <span id={idDescripcion} className="text-[0.9375rem] leading-relaxed text-foreground/85">
+          {algoritmo.intencion}
         </span>
-        <span className="text-[0.9375rem] leading-relaxed text-foreground/85">{algoritmo.intencion}</span>
         {bloqueado ? (
           <span className="flex items-center gap-1 text-xs whitespace-nowrap text-tenue">
             <Lock className="size-3.5" aria-hidden="true" />
@@ -81,11 +87,11 @@ export default function Inicio() {
       <Grieta semilla={5} className="mb-8" />
 
       <section aria-labelledby="demostracion">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           <h2 id="demostracion" className="font-sans text-base font-medium tracking-normal text-muted-foreground [font-stretch:100%]">
             Inserción ordenando siete números
           </h2>
-          <Link to={rutaDe('insercion')} className="text-sm text-enlace underline-offset-4 hover:underline">
+          <Link to={rutaDe('insercion')} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}>
             Abrir la ficha con el código
           </Link>
         </div>
@@ -95,7 +101,7 @@ export default function Inicio() {
       {!conSesion && privados > 0 && (
         <p className="facetado mt-10 max-w-[68ch] border bg-card px-4 py-3 text-[0.9375rem] text-foreground/90">
           Sin cuenta puedes abrir {algoritmos.length - privados} fichas.{' '}
-          <Link to="/registro" className="text-enlace underline underline-offset-4">
+          <Link to="/registro" className="enlace">
             Crea una cuenta gratis
           </Link>{' '}
           para ver las {algoritmos.length} completas.
@@ -108,7 +114,8 @@ export default function Inicio() {
         </div>
       )}
 
-      <div id="catalogo" className="scroll-mt-20" />
+      {/* Destino de "Ver el catálogo". tabIndex -1 lleva ahí el foco del teclado, no sólo la vista. */}
+      <div id="catalogo" tabIndex={-1} className="scroll-mt-20 outline-none" />
       {algoritmos.length > 0 && FAMILIAS.map((familia) => (
         <section key={familia.id} aria-labelledby={`familia-${familia.id}`} className="mt-16">
           <h2 id={`familia-${familia.id}`} className="text-3xl">
@@ -140,24 +147,22 @@ export default function Inicio() {
           Más en el catálogo
         </h2>
         <div>
-          <h3 className="text-lg">
-            <Link to="/comparativa" className="text-enlace underline-offset-4 hover:underline">
-              Tabla comparativa
-            </Link>
-          </h3>
+          <h3 className="text-lg">Tabla comparativa</h3>
           <p className="mt-2 text-[0.9375rem] text-foreground/85">
             Todos los algoritmos lado a lado: complejidad, memoria, estabilidad y requisitos.
           </p>
+          <Link to="/comparativa" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4')}>
+            Abrir la tabla comparativa
+          </Link>
         </div>
         <div>
-          <h3 className="text-lg">
-            <Link to="/conceptos" className="text-enlace underline-offset-4 hover:underline">
-              Conceptos previos
-            </Link>
-          </h3>
+          <h3 className="text-lg">Conceptos previos</h3>
           <p className="mt-2 text-[0.9375rem] text-foreground/85">
             Qué significa O(n log n), qué es un ordenamiento estable y qué quiere decir trabajar en el sitio.
           </p>
+          <Link to="/conceptos" className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4')}>
+            Leer los conceptos previos
+          </Link>
         </div>
       </section>
     </>

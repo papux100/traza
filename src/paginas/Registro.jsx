@@ -60,7 +60,7 @@ export default function Registro() {
           inicia sesión.
         </p>
         <p className="mt-6">
-          <Link to="/entrar" state={state} className="text-enlace underline underline-offset-4">
+          <Link to="/entrar" state={state} className="enlace">
             Ir a iniciar sesión
           </Link>
         </p>
@@ -114,7 +114,7 @@ export default function Registro() {
 
       <p className="mt-6 text-sm text-muted-foreground">
         ¿Ya tienes cuenta?{' '}
-        <Link to="/entrar" state={state} className="text-enlace underline underline-offset-4">
+        <Link to="/entrar" state={state} className="enlace">
           Inicia sesión
         </Link>
       </p>

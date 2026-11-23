@@ -62,7 +62,7 @@ function Complejidad({ datos, nota }) {
           <Badge variant={datos.enSitio ? 'si' : 'no'}>
             {datos.enSitio ? 'Trabaja en el sitio' : 'Necesita memoria adicional'}
           </Badge>
-          <Link to="/conceptos" className="self-center text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+          <Link to="/conceptos" className="enlace self-center text-xs">
             ¿Qué significan estos términos?
           </Link>
         </div>
@@ -97,25 +97,31 @@ export function NavegacionFichas({ id, algoritmos }) {
   const anterior = algoritmos[posicion - 1]
   const siguiente = algoritmos[posicion + 1]
   return (
-    <nav aria-label="Otras fichas" className="mt-16 flex flex-wrap justify-between gap-4 border-t pt-6 text-sm">
+    <nav aria-label="Otras fichas" className="mt-16 grid gap-3 border-t pt-6 text-sm sm:grid-cols-2">
       {anterior ? (
-        <Link to={rutaDe(anterior.id)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4" aria-hidden="true" />
+        <Link
+          to={rutaDe(anterior.id)}
+          className="facetado flex items-center gap-3 border bg-card px-4 py-3 transition-colors hover:border-faceta-5 hover:bg-faceta-1"
+        >
+          <ArrowLeft className="size-4 shrink-0 text-enlace" aria-hidden="true" />
           <span>
-            <span className="block text-xs text-tenue">Ficha anterior</span>
-            {anterior.nombre}
+            <span className="block text-xs text-muted-foreground">Ficha anterior</span>
+            <span className="font-medium text-foreground">{anterior.nombre}</span>
           </span>
         </Link>
       ) : (
-        <span />
+        <span className="hidden sm:block" />
       )}
       {siguiente && (
-        <Link to={rutaDe(siguiente.id)} className="flex items-center gap-2 text-right text-muted-foreground hover:text-foreground">
+        <Link
+          to={rutaDe(siguiente.id)}
+          className="facetado flex items-center justify-end gap-3 border bg-card px-4 py-3 text-right transition-colors hover:border-faceta-5 hover:bg-faceta-1"
+        >
           <span>
-            <span className="block text-xs text-tenue">Ficha siguiente</span>
-            {siguiente.nombre}
+            <span className="block text-xs text-muted-foreground">Ficha siguiente</span>
+            <span className="font-medium text-foreground">{siguiente.nombre}</span>
           </span>
-          <ArrowRight className="size-4" aria-hidden="true" />
+          <ArrowRight className="size-4 shrink-0 text-enlace" aria-hidden="true" />
         </Link>
       )}
     </nav>
@@ -193,10 +199,15 @@ export function Ficha({ datos, ficha, algoritmos, conSesion }) {
               <li key={relacion.id} className="px-4 py-3.5">
                 <Link
                   to={rutaDe(otro.id)}
-                  className="inline-flex items-center gap-1.5 font-medium text-enlace underline-offset-4 hover:underline"
+                  className="boton-ficha"
                 >
                   {otro.nombre}
-                  {!conSesion && !otro.publico && <Lock className="size-3.5 text-tenue" aria-label="Requiere cuenta" />}
+                  {!conSesion && !otro.publico && (
+                    <>
+                      <Lock className="size-3.5 text-foreground/70" aria-hidden="true" />
+                      <span className="sr-only"> (requiere cuenta)</span>
+                    </>
+                  )}
                 </Link>
                 <p className="prosa mt-1 text-[0.9375rem] leading-relaxed text-foreground/85">
                   <MarkdownEnLinea texto={relacion.texto} />

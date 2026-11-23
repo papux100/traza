@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { ExternalLink } from 'lucide-react'
 import { leerBloques, leerEnLinea } from '@/lib/markdown'
 
 function Fragmentos({ fragmentos }) {
@@ -9,7 +10,11 @@ function Fragmentos({ fragmentos }) {
       return f.url.startsWith('/') ? (
         <Link key={i} to={f.url}>{f.texto}</Link>
       ) : (
-        <a key={i} href={f.url} target="_blank" rel="noopener noreferrer">{f.texto}</a>
+        <a key={i} href={f.url} target="_blank" rel="noopener noreferrer">
+          {f.texto}
+          <ExternalLink className="ml-0.5 inline size-3.5 align-[-2px]" aria-hidden="true" />
+          <span className="sr-only"> (se abre en otra pestaña)</span>
+        </a>
       )
     }
     return f.texto
