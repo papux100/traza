@@ -154,6 +154,11 @@ algoritmo (servidor)  ->  traza en JSON (HTTP)  ->  reproductor (navegador)  -> 
 
 Las dependencias van en un solo sentido. Un algoritmo no sabe que existe una pantalla, el reproductor no sabe qué algoritmo ejecutó, y el dibujo no sabe cómo se generó el paso que recibe. Esa separación es lo que permitió mover los algoritmos al servidor sin tocar el dibujo: la traza simplemente viaja por la red.
 
+## Documentación
+
+- [Diario de decisiones](docs/DECISIONES.md): las 17 decisiones importantes del proyecto, con su contexto, las alternativas y el motivo de cada una.
+- [Bitácora de IA](docs/BITACORA-IA.md): la conversación completa con Claude, prompt por prompt, desde la idea inicial hasta el rediseño.
+
 ## Estructura
 
 ```
