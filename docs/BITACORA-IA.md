@@ -5,7 +5,7 @@ Registro completo de la conversación con Claude (Anthropic) durante el desarrol
 - **Alumno:** Angel Rey Rodríguez
 - **Materia:** Aplicaciones Web, FIAD, UABC
 - **Sitio publicado:** https://traza-pi.vercel.app
-- **Contenido:** 76 interacciones en 15 etapas
+- **Contenido:** 78 interacciones en 16 etapas
 
 Lo que Claude hizo con herramientas (comandos, archivos creados, búsquedas) aparece resumido en una línea por acción. Las imágenes y archivos adjuntos no se reproducen. Las decisiones que salieron de esta conversación están explicadas en [DECISIONES.md](DECISIONES.md).
 
@@ -26,6 +26,7 @@ Lo que Claude hizo con herramientas (comandos, archivos creados, búsquedas) apa
 13. [Explicaciones finales y repositorio público](#etapa-13)
 14. [Rediseño: triángulos fragmentados y botones](#etapa-14)
 15. [Bitácora, diario de decisiones y entrega](#etapa-15)
+16. [Barras ocultas, miniaturas animadas y bitácora final](#etapa-16)
 
 ---
 
@@ -3559,4 +3560,122 @@ Lo único que te recomendaría quitar es la matrícula, por coherencia con lo qu
 
 **Respuesta de Claude:**
 
-El diario de decisiones ya incluía los enlaces (decisión 15). Se volvió a generar esta bitácora con las últimas interacciones: el crédito como coautor, el diario de decisiones y la revisión de datos sensibles. Se entregó en Markdown, PDF y página.
+La decisión de los enlaces ya está en el diario: es la 15, porque lo escribí después de ese cambio. Lo que sí falta en la bitácora son las últimas interacciones: el contribuidor, el diario, la revisión de datos sensibles y esta. Las traigo del historial:
+
+I have the 7 new turns. I'll update the scripts so the last stage covers the log, the decisions diary and the submission, and I'll regenerate everything:
+
+La bitácora ya está actualizada y tiene 76 interacciones. La última etapa se llama ahora "Bitácora, diario de decisiones y entrega" e incluye la creación de la bitácora, cómo ponerme de coautor, el diario de decisiones, la revisión de datos sensibles y esta petición. La página publicada también quedó actualizada.
+
+**Diario de decisiones:** no necesitó cambios. El cambio de los enlaces ya está registrado como la **decisión 15** ("Enlaces, botones y accesibilidad"), porque escribí el diario después de hacer ese cambio, aunque tú lo subiste en un commit posterior.
+
+**Corrección en la bitácora:** al regenerarla encontré que el texto de la respuesta donde armé la bitácora salía mezclado con fragmentos de código. Lo corregí y comprobé que las 71 interacciones anteriores quedaron idénticas a la versión anterior.
+
+**Para subirlo:**
+
+1. Descomprime `traza-docs.zip` en la raíz y reemplaza los archivos. El que cambió de verdad es `docs/BITACORA-IA.md`.
+2. Haz el commit, por ejemplo:
+   ```
+   15-bitacora-actualizada
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+3. Haz push.
+
+Tienes hasta las 11:59 PM para entregar en Classroom las ligas del repositorio y de https://traza-pi.vercel.app.
+
+La matrícula sigue apareciendo en las dos líneas que te comenté. Si quieres que la cambie por `[matrícula]` antes de subirlo, dímelo y lo hago en un momento.
+
+<details><summary>Acciones de Claude (14)</summary>
+
+- Usó la herramienta read_conversation
+- Usó la herramienta read_conversation
+- Ejecutó un comando: Ver qué turnos trae la página guardada
+- Usó la herramienta read_conversation
+- Usó la herramienta read_conversation
+- Usó la herramienta read_conversation
+- Ejecutó un comando: Ajustar los scripts para incluir las nuevas interacciones en la última etapa
+- Ejecutó un comando: Regenerar la bitácora completa en página, Markdown y PDF
+- Ejecutó un comando: Corregir el caso sin comando y revisar cómo quedaron los turnos nuevos
+- Ejecutó un comando: Hacer más estricto el reconocimiento de herramientas y revisar los turnos nuevos
+- Ejecutó un comando: Confirmar que lo anterior no cambió y regenerar página, Markdown y PDF
+- Usó la herramienta Artifact
+- Ejecutó un comando: Volver a empaquetar los documentos del repositorio
+- Entregó archivos: [/mnt/user-data/outputs/traza-docs.zip, /mnt/user-data/outputs/bitacora-traza.pdf]
+
+</details>
+
+---
+
+<a id="etapa-16"></a>
+## Etapa 16. Barras ocultas, miniaturas animadas y bitácora final
+
+### 77. Prompt
+
+> quiero que no se vean esas barras de scrool si es posible.
+>
+> tambien que cuando se le haga hover a uno de los algoritmos en el catalogo, muestre una animacion de este
+
+**Respuesta de Claude:**
+
+Voy a hacer las dos cosas:
+
+- Ocultar las barras del menú lateral y de la página; el desplazamiento sigue funcionando.
+- Al pasar el cursor o el foco del teclado por un algoritmo del catálogo, una animación pequeña de sus barras ordenándose.
+
+Antes reviso cómo está armada la fila del catálogo y la ruta de ejecución.
+
+Now the server: a public route that returns, for each algorithm, only the frames of its bars (heights and colors) for its example input. No code and no text.
+
+The test failed on "linea" because the id `busqueda-lineal` contains it. I'll fix the test so it checks the fields instead of searching words:
+
+Now the site. First the component that animates the thumbnail:
+
+Lint and build pass. Now I check it in the browser: I hover over a row and take two screenshots a moment apart to confirm it's moving.
+
+The scrollbars are already hidden in both places. The search row's short name is different; I'll select it by position:
+
+Ya ocultas las barras de desplazamiento y hay una animación al pasar el cursor por un algoritmo. Pasan las 23 pruebas del sitio y las 106 de la API (3 son nuevas), y el lint y el build salen limpios.
+
+**Barras de desplazamiento:** ya no se ven ni en la página ni en el menú lateral. Puedes seguir bajando con la rueda, el touchpad, el teclado o el dedo. Las zonas que se desplazan de lado, como el código y las tablas, conservan su barra para que se note que hay más contenido.
+
+**Animación en el catálogo:** al pasar el cursor sobre una fila, o al llegar con Tab, el lugar donde va la complejidad o el "Requiere cuenta" muestra unas barras pequeñas del algoritmo trabajando en bucle, con los colores del visualizador. Las búsquedas van más lento porque tienen pocos pasos. Si alguien tiene activado reducir el movimiento, se ve el resultado final sin animar. En celular no aparece, porque ahí no hay hover.
+
+Para que funcione también con los algoritmos privados, agregué una ruta pública nueva en la API: `GET /api/vistas-previas`. Devuelve sólo la altura y el color de cada barra con los datos de ejemplo, sin código ni textos. Así quien no tiene cuenta ve cómo trabaja cada algoritmo, pero no el contenido de la ficha. Las 19 miniaturas llegan en una sola petición, poco después de cargar el inicio. Lo registré en `docs/DECISIONES.md` como las decisiones 18 y 19, y agregué la ruta al README.
+
+**Para subirlo:**
+
+1. Descomprime `traza-vistas-previas.zip` en la raíz y reemplaza los archivos.
+2. Haz commit y push. Vercel publica el sitio y Render la API, porque cambió `servidor/`.
+3. Espera a que Render diga **Live** antes de probarlo en `traza-pi.vercel.app`. Mientras la API nueva no esté arriba, el catálogo sigue funcionando como antes, sólo que sin la animación.
+
+`docs/BITACORA-IA.md` todavía no incluye esta conversación. Cuando termines de hacer cambios, pídeme actualizar la bitácora y la regenero con todo hasta ese momento.
+
+<details><summary>Acciones de Claude (17)</summary>
+
+- Ejecutó un comando: Revisar la fila del catálogo, la ruta de ejecución, los estados y el menú lateral
+- Ejecutó un comando: Ver cómo se ejecuta cada algoritmo y el tamaño de sus trazas de ejemplo
+- Ejecutó un comando: Ver la estructura de las pruebas de la API y del servicio del frontend
+- Ejecutó un comando: Crear la ruta de vistas previas con sus pruebas y medir el tamaño
+- Ejecutó un comando: Corregir la prueba de campos y volver a correr las pruebas de la API
+- Ejecutó un comando: Ver las funciones públicas del servicio de la API
+- Ejecutó un comando: Crear la miniatura animada, conectarla a las filas y ocultar las barras
+- Ejecutó un comando: Ver el error del lint
+- Ejecutó un comando: Quitar el cambio de estado dentro del efecto y revisar lint y build
+- Ejecutó un comando: Levantar el entorno de prueba y capturar la animación al pasar el cursor y con el teclado
+- Ejecutó un comando: Repetir la captura de la animación
+- Leyó /tmp/claude-0/-home-claude/41737629-7831-58e6-9e2a-93ec9cd52dc7/scratchpad/diseno/hover-combo.png
+- Ejecutó un comando: Ubicar dónde se listan las rutas de la API en la documentación
+- Ejecutó un comando: Registrar las dos decisiones nuevas y la ruta en el README
+- Ejecutó un comando: Buscar el conteo de pruebas viejo en la documentación
+- Ejecutó un comando: Actualizar el conteo, verificar todo y empaquetar los archivos cambiados
+- Entregó archivos: [/tmp/claude-0/-home-claude/41737629-7831-58e6-9e2a-93ec9cd52dc7/scratchpad/diseno/hover-combo.png, /mnt/user-data/outputs/traza-vistas-previas.zip]
+
+</details>
+
+### 78. Prompt
+
+> actualizala
+
+**Respuesta de Claude:**
+
+Se volvió a generar esta bitácora con todas las interacciones hasta este momento, incluidas las barras de desplazamiento ocultas y las miniaturas animadas del catálogo. Se entregó en Markdown (docs/BITACORA-IA.md), PDF y página.
